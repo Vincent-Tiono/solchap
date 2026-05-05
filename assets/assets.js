@@ -20,6 +20,8 @@ import { ClockFadingIcon, HeadsetIcon, SendIcon } from "lucide-react";
 import profile_pic1 from "./profile_pic1.jpg"
 import profile_pic2 from "./profile_pic2.jpg"
 import profile_pic3 from "./profile_pic3.jpg"
+import makna_1 from "./makna_1.png"
+import makna_2 from "./makna_2.png"
 
 export const assets = {
     upload_area, hero_model_img,
@@ -62,6 +64,36 @@ export const dummyStoreData = {
 }
 
 export const productDummyData = [
+        {
+        id: "makna_1",
+        name: "Kain Makna 1",
+        description: "Length: 60cm, Width: 8cm",
+        mrp: 40,
+        price: 29,
+        images: [makna_1],
+        category: "Decoration",
+        storeId: "seller_1",
+        inStock: false,
+        store: dummyStoreData,
+        rating: dummyRatingsData,
+        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+    },
+    {
+        id: "makna_2",
+        name: "Kain Makna 2",
+        description: "Length: 60cm, Width: 8cm",
+        mrp: 40,
+        price: 29,
+        images: [makna_2],
+        category: "Decoration",
+        storeId: "seller_1",
+        inStock: true,
+        store: dummyStoreData,
+        rating: dummyRatingsData,
+        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+    },
     {
         id: "prod_1",
         name: "Modern table lamp",

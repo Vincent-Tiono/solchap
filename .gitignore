@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env
+.env*.local
 
 # vercel
 .vercel
@@ -41,3 +42,5 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+meta-shape-474007-f2-38b0a7579db2.json

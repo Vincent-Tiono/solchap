@@ -5,18 +5,18 @@ import { useEffect, useState } from "react"
 import { MailIcon, MapPinIcon } from "lucide-react"
 import Loading from "@/components/Loading"
 import Image from "next/image"
-import { dummyStoreData, productDummyData } from "@/assets/assets"
+import { dummyStoreData } from "@/assets/assets"
+import { useSelector } from "react-redux"
 
 export default function StoreShop() {
 
     const { username } = useParams()
-    const [products, setProducts] = useState([])
+    const products = useSelector(state => state.product.list)
     const [storeInfo, setStoreInfo] = useState(null)
     const [loading, setLoading] = useState(true)
 
     const fetchStoreData = async () => {
         setStoreInfo(dummyStoreData)
-        setProducts(productDummyData)
         setLoading(false)
     }
 

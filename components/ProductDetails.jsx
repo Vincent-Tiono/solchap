@@ -19,8 +19,10 @@ const ProductDetails = ({ product }) => {
     const router = useRouter()
 
     const [mainImage, setMainImage] = useState(product.images[0]);
+    const isOutOfStock = product.inStock === false;
 
     const addToCartHandler = () => {
+        if (isOutOfStock) return;
         dispatch(addToCart({ productId }))
     }
 
@@ -32,12 +34,17 @@ const ProductDetails = ({ product }) => {
                 <div className="flex sm:flex-col gap-3">
                     {product.images.map((image, index) => (
                         <div key={index} onClick={() => setMainImage(product.images[index])} className="bg-slate-100 flex items-center justify-center size-26 rounded-lg group cursor-pointer">
-                            <Image src={image} className="group-hover:scale-103 group-active:scale-95 transition" alt="" width={45} height={45} />
+                            <Image src={image} className={`group-hover:scale-103 group-active:scale-95 transition ${isOutOfStock ? 'grayscale opacity-50' : ''}`} alt="" width={45} height={45} />
                         </div>
                     ))}
                 </div>
-                <div className="flex justify-center items-center h-100 sm:size-113 bg-slate-100 rounded-lg ">
-                    <Image src={mainImage} alt="" width={250} height={250} />
+                <div className="relative flex justify-center items-center h-100 sm:size-113 bg-slate-100 rounded-lg ">
+                    {isOutOfStock && (
+                        <span className="absolute top-5 left-5 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-white">
+                            Out of stock
+                        </span>
+                    )}
+                    <Image src={mainImage} alt="" width={250} height={250} className={isOutOfStock ? 'grayscale opacity-50' : ''} />
                 </div>
             </div>
             <div className="flex-1">
@@ -65,8 +72,8 @@ const ProductDetails = ({ product }) => {
                             </div>
                         )
                     }
-                    <button onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition">
-                        {!cart[productId] ? 'Add to Cart' : 'View Cart'}
+                    <button disabled={isOutOfStock} onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300 disabled:active:scale-100">
+                        {isOutOfStock ? 'Out of Stock' : !cart[productId] ? 'Add to Cart' : 'View Cart'}
                     </button>
                 </div>
                 <hr className="border-gray-300 my-5" />
