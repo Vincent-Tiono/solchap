@@ -1,53 +1,44 @@
 'use client'
-import { assets } from '@/assets/assets'
-import { ArrowRightIcon, ChevronRightIcon } from 'lucide-react'
+
 import Image from 'next/image'
-import React from 'react'
-import CategoriesMarquee from './CategoriesMarquee'
+import nenekImage from '@/assets/solchap_nenek.png'
+import supportImage from '@/assets/solchap_support.png'
 
 const Hero = () => {
-
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
-
     return (
-        <div className='mx-6'>
-            <div className='flex max-xl:flex-col gap-8 max-w-7xl mx-auto my-10'>
-                <div className='relative flex-1 flex flex-col bg-green-200 rounded-3xl xl:min-h-100 group'>
-                    <div className='p-5 sm:p-16'>
-                        <div className='inline-flex items-center gap-3 bg-green-300 text-green-600 pr-4 p-1 rounded-full text-xs sm:text-sm'>
-                            <span className='bg-green-600 px-3 py-1 max-sm:ml-1 rounded-full text-white text-xs'>NEWS</span> Free Shipping on Orders Above $50! <ChevronRightIcon className='group-hover:ml-2 transition-all' size={16} />
-                        </div>
-                        <h2 className='text-3xl sm:text-5xl leading-[1.2] my-3 font-medium bg-gradient-to-r from-slate-600 to-[#A0FF74] bg-clip-text text-transparent max-w-xs  sm:max-w-md'>
-                            Gadgets you'll love. Prices you'll trust.
-                        </h2>
-                        <div className='text-slate-800 text-sm font-medium mt-4 sm:mt-8'>
-                            <p>Starts from</p>
-                            <p className='text-3xl'>{currency}4.90</p>
-                        </div>
-                        <button className='bg-slate-800 text-white text-sm py-2.5 px-7 sm:py-5 sm:px-12 mt-4 sm:mt-10 rounded-md hover:bg-slate-900 hover:scale-103 active:scale-95 transition'>LEARN MORE</button>
-                    </div>
-                    <Image className='sm:absolute bottom-0 right-0 md:right-10 w-full sm:max-w-sm' src={assets.hero_model_img} alt="" />
-                </div>
-                <div className='flex flex-col md:flex-row xl:flex-col gap-5 w-full xl:max-w-sm text-sm text-slate-600'>
-                    <div className='flex-1 flex items-center justify-between w-full bg-orange-200 rounded-3xl p-6 px-8 group'>
-                        <div>
-                            <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#FFAD51] bg-clip-text text-transparent max-w-40'>Best products</p>
-                            <p className='flex items-center gap-1 mt-4'>View more <ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </p>
-                        </div>
-                        <Image className='w-35' src={assets.hero_product_img1} alt="" />
-                    </div>
-                    <div className='flex-1 flex items-center justify-between w-full bg-blue-200 rounded-3xl p-6 px-8 group'>
-                        <div>
-                            <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#78B2FF] bg-clip-text text-transparent max-w-40'>20% discounts</p>
-                            <p className='flex items-center gap-1 mt-4'>View more <ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </p>
-                        </div>
-                        <Image className='w-35' src={assets.hero_product_img2} alt="" />
+        <section className="bg-[#f4efe8] text-slate-950">
+            <div className="relative w-full flex justify-center overflow-hidden pl-0 pr-25 py-16 md:justify-end md:py-20 lg:min-h-[450px]">
+
+                <Image
+                    src={nenekImage}
+                    alt="Woman weaving Kain Makna tenun"
+                    priority
+                    className="pointer-events-none absolute bottom-0 left-0 z-0 w-[240px] max-w-[50%] object-contain sm:w-[330px] md:w-[420px] lg:w-[500px] xl:w-[720px]"
+                />
+                <Image
+                    src={supportImage}
+                    alt="Support handcrafted fabrics from Indonesia"
+                    priority
+                    className="pointer-events-none absolute left-4 top-8 z-0 w-[180px] max-w-[20%] object-contain sm:left-8 sm:top-10 sm:w-[260px] md:left-14 md:top-14 md:w-[340px] lg:left-20 lg:top-16 lg:w-[420px]"
+                />
+                <div className="relative z-10 flex w-full max-w-4xl flex-col items-center text-center md:items-end md:text-right">
+                    <h1 className="text-[#b80b35]">
+                        <span className="block text-xl font-semibold leading-none sm:text-xl lg:text-[4rem]">KAIN</span>
+                        <span className="block text-xl font-semibold leading-none sm:text-xl lg:text-[4rem]">MAKNA</span>
+                    </h1>
+
+                    <div className="mt-8 max-w-2xl text-xl font-semibold leading-tight sm:text-2xl lg:text-xl">
+                        <p>
+                            <em className="text-[#b80b35]">"Kain Makna"</em> (meaning "Purpose") by Solar Chapter celebrates women's voices by showcasing their <em className="text-[#b80b35]">tenun heritage</em>.
+                        </p>
+                        <p className="mt-5">
+                            Handwoven by women in NTT villages, each piece is crafted using traditional wooden looms passed down through generations. The creation of one <em>tenun</em> can take from a week to years, depending on material, pattern, and size.
+                        </p>
+                        <p className="mt-7 text-4xl font-semibold text-[#b80b35] sm:text-5xl">#Ayopakaikain</p>
                     </div>
                 </div>
             </div>
-            <CategoriesMarquee />
-        </div>
-
+        </section>
     )
 }
 

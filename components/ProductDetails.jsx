@@ -1,33 +1,81 @@
 'use client'
 
 import { addToCart } from "@/lib/features/cart/cartSlice";
-import { StarIcon, TagIcon, EarthIcon, CreditCardIcon, UserIcon } from "lucide-react";
+import { updateProductInventory } from "@/lib/features/product/productSlice";
+import { PackageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Counter from "./Counter";
 import { useDispatch, useSelector } from "react-redux";
+import { formatPrice, getProductPrice } from "@/lib/currency";
+import toast from "react-hot-toast";
+
+const STOCK_CHECK_BUFFER_MS = 1200;
 
 const ProductDetails = ({ product }) => {
 
     const productId = product.id;
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
     const cart = useSelector(state => state.cart.cartItems);
+    const selectedCurrency = useSelector(state => state.currency.selected);
     const dispatch = useDispatch();
 
     const router = useRouter()
 
     const [mainImage, setMainImage] = useState(product.images[0]);
+    const [isCheckingStock, setIsCheckingStock] = useState(false);
     const isOutOfStock = product.inStock === false;
+    const stockLeft = typeof product.stock === 'number' ? product.stock : null;
+    const price = getProductPrice(product, selectedCurrency);
 
     const addToCartHandler = () => {
         if (isOutOfStock) return;
-        dispatch(addToCart({ productId }))
+        dispatch(addToCart({ productId, maxStock: stockLeft }))
     }
 
-    const averageRating = product.rating.reduce((acc, item) => acc + item.rating, 0) / product.rating.length;
-    
+    const viewCartHandler = async () => {
+        if (isCheckingStock) return;
+
+        setIsCheckingStock(true);
+
+        try {
+            await new Promise((resolve) => setTimeout(resolve, STOCK_CHECK_BUFFER_MS));
+
+            const response = await fetch('/api/inventory', { cache: 'no-store' });
+
+            if (!response.ok) {
+                throw new Error('Unable to verify stock. Please try again.');
+            }
+
+            const data = await response.json();
+            const latestInventory = data.inventory || {};
+            const latestProductInventory = latestInventory[productId];
+
+            dispatch(updateProductInventory(latestInventory));
+
+            if (!latestProductInventory) {
+                throw new Error('Unable to verify stock for this product. Please try again.');
+            }
+
+            const requestedQuantity = cart[productId] || 0;
+            const latestStock = Number(latestProductInventory.stock || 0);
+
+            if (requestedQuantity > latestStock) {
+                toast.error(`Only ${latestStock} item${latestStock === 1 ? '' : 's'} left. Please update your quantity.`);
+                router.replace(`/product/${productId}`);
+                return;
+            }
+
+            router.push('/cart');
+        } catch (error) {
+            toast.error(error.message || 'Unable to verify stock. Please try again.');
+            router.replace(`/product/${productId}`);
+        } finally {
+            setIsCheckingStock(false);
+        }
+    }
+
     return (
         <div className="flex max-lg:flex-col gap-12">
             <div className="flex max-sm:flex-col-reverse gap-3">
@@ -49,40 +97,30 @@ const ProductDetails = ({ product }) => {
             </div>
             <div className="flex-1">
                 <h1 className="text-3xl font-semibold text-slate-800">{product.name}</h1>
-                <div className='flex items-center mt-2'>
-                    {Array(5).fill('').map((_, index) => (
-                        <StarIcon key={index} size={14} className='text-transparent mt-0.5' fill={averageRating >= index + 1 ? "#00C950" : "#D1D5DB"} />
-                    ))}
-                    <p className="text-sm ml-3 text-slate-500">{product.rating.length} Reviews</p>
+                <div className="flex items-start my-6 text-2xl font-semibold text-slate-800">
+                    <p> {formatPrice(price, selectedCurrency)} </p>
                 </div>
-                <div className="flex items-start my-6 gap-3 text-2xl font-semibold text-slate-800">
-                    <p> {currency}{product.price} </p>
-                    <p className="text-xl text-slate-500 line-through">{currency}{product.mrp}</p>
-                </div>
-                <div className="flex items-center gap-2 text-slate-500">
-                    <TagIcon size={14} />
-                    <p>Save {((product.mrp - product.price) / product.mrp * 100).toFixed(0)}% right now</p>
-                </div>
+                {stockLeft !== null && (
+                    <div className="flex items-center gap-2 text-slate-500">
+                        <PackageIcon size={16} className="text-slate-400" />
+                        <p>
+                            <span className="font-medium text-slate-700">Stock left:</span> {stockLeft}
+                        </p>
+                    </div>
+                )}
                 <div className="flex items-end gap-5 mt-10">
                     {
                         cart[productId] && (
                             <div className="flex flex-col gap-3">
                                 <p className="text-lg text-slate-800 font-semibold">Quantity</p>
-                                <Counter productId={productId} />
+                                <Counter productId={productId} maxStock={stockLeft} />
                             </div>
                         )
                     }
-                    <button disabled={isOutOfStock} onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300 disabled:active:scale-100">
-                        {isOutOfStock ? 'Out of Stock' : !cart[productId] ? 'Add to Cart' : 'View Cart'}
+                    <button disabled={isOutOfStock || isCheckingStock} onClick={() => !cart[productId] ? addToCartHandler() : viewCartHandler()} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300 disabled:active:scale-100">
+                        {isOutOfStock ? 'Out of Stock' : isCheckingStock ? 'Checking Stock...' : !cart[productId] ? 'Add to Cart' : 'View Cart'}
                     </button>
                 </div>
-                <hr className="border-gray-300 my-5" />
-                <div className="flex flex-col gap-4 text-slate-500">
-                    <p className="flex gap-3"> <EarthIcon className="text-slate-400" /> Free shipping worldwide </p>
-                    <p className="flex gap-3"> <CreditCardIcon className="text-slate-400" /> 100% Secured Payment </p>
-                    <p className="flex gap-3"> <UserIcon className="text-slate-400" /> Trusted by top brands </p>
-                </div>
-
             </div>
         </div>
     )

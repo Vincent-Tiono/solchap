@@ -29,13 +29,13 @@ export default function Product() {
 
                 {/* Breadcrums */}
                 <div className="  text-gray-600 text-sm mt-8 mb-5">
-                    Home / Products / {product?.category}
+                    Home / Products
                 </div>
 
                 {/* Product Details */}
                 {product && (<ProductDetails product={product} />)}
 
-                {/* Description & Reviews */}
+                {/* Description */}
                 {product && (<ProductDescription product={product} />)}
             </div>
         </div>

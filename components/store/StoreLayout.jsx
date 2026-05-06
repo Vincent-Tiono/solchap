@@ -3,34 +3,31 @@ import { useEffect, useState } from "react"
 import Loading from "../Loading"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
-import SellerNavbar from "./StoreNavbar"
-import SellerSidebar from "./StoreSidebar"
-import { dummyStoreData } from "@/assets/assets"
+import OwnerNavbar from "./StoreNavbar"
+import OwnerSidebar from "./StoreSidebar"
 
 const StoreLayout = ({ children }) => {
 
 
-    const [isSeller, setIsSeller] = useState(false)
+    const [isOwner, setIsOwner] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [storeInfo, setStoreInfo] = useState(null)
 
-    const fetchIsSeller = async () => {
-        setIsSeller(true)
-        setStoreInfo(dummyStoreData)
+    const fetchIsOwner = async () => {
+        setIsOwner(true)
         setLoading(false)
     }
 
     useEffect(() => {
-        fetchIsSeller()
+        fetchIsOwner()
     }, [])
 
     return loading ? (
         <Loading />
-    ) : isSeller ? (
+    ) : isOwner ? (
         <div className="flex flex-col h-screen">
-            <SellerNavbar />
+            <OwnerNavbar />
             <div className="flex flex-1 items-start h-full overflow-y-scroll no-scrollbar">
-                <SellerSidebar storeInfo={storeInfo} />
+                <OwnerSidebar />
                 <div className="flex-1 h-full p-5 lg:pl-12 lg:pt-12 overflow-y-scroll">
                     {children}
                 </div>

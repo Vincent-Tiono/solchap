@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Loading from "@/components/Loading"
 import { orderDummyData } from "@/assets/assets"
+import { DEFAULT_CURRENCY, formatPrice } from "@/lib/currency"
 
 export default function StoreOrders() {
     const [orders, setOrders] = useState([])
@@ -39,7 +40,7 @@ export default function StoreOrders() {
 
     return (
         <>
-            <h1 className="text-2xl text-slate-500 mb-5">Store <span className="text-slate-800 font-medium">Orders</span></h1>
+            <h1 className="text-2xl text-slate-500 mb-5">Product <span className="text-slate-800 font-medium">Orders</span></h1>
             {orders.length === 0 ? (
                 <p>No orders found</p>
             ) : (
@@ -63,7 +64,7 @@ export default function StoreOrders() {
                                         {index + 1}
                                     </td>
                                     <td className="px-4 py-3">{order.user?.name}</td>
-                                    <td className="px-4 py-3 font-medium text-slate-800">${order.total}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-800">{formatPrice(order.total, order.currency || DEFAULT_CURRENCY)}</td>
                                     <td className="px-4 py-3">{order.paymentMethod}</td>
                                     <td className="px-4 py-3">
                                         {order.isCouponUsed ? (
@@ -127,7 +128,7 @@ export default function StoreOrders() {
                                         <div className="flex-1">
                                             <p className="text-slate-800">{item.product?.name}</p>
                                             <p>Qty: {item.quantity}</p>
-                                            <p>Price: ${item.price}</p>
+                                            <p>Price: {formatPrice(item.price, selectedOrder.currency || DEFAULT_CURRENCY)}</p>
                                         </div>
                                     </div>
                                 ))}

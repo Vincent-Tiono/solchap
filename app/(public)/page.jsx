@@ -8,10 +8,10 @@ import OurProducts from "@/components/OurProducts";
 export default function Home() {
     return (
         <div>
-            {/* <Hero /> */}
+            <Hero />
             <OurProducts />
             {/* <BestSelling /> */}
-            <OurSpecs />
+            {/* <OurSpecs /> */}
             {/* <Newsletter /> */}
         </div>
     );

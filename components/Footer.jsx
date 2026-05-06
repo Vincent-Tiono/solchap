@@ -14,35 +14,23 @@ const Footer = () => {
     const LinkedinIcon = () => (<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M13.3346 6.66699C14.6607 6.66699 15.9325 7.19378 16.8702 8.13146C17.8079 9.06914 18.3346 10.3409 18.3346 11.667V17.5003H15.0013V11.667C15.0013 11.225 14.8257 10.801 14.5131 10.4885C14.2006 10.1759 13.7767 10.0003 13.3346 10.0003C12.8926 10.0003 12.4687 10.1759 12.1561 10.4885C11.8436 10.801 11.668 11.225 11.668 11.667V17.5003H8.33464V11.667C8.33464 10.3409 8.86142 9.06914 9.7991 8.13146C10.7368 7.19378 12.0086 6.66699 13.3346 6.66699Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /> <path d="M5.0013 7.50033H1.66797V17.5003H5.0013V7.50033Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /> <path d="M3.33464 5.00033C4.25511 5.00033 5.0013 4.25413 5.0013 3.33366C5.0013 2.41318 4.25511 1.66699 3.33464 1.66699C2.41416 1.66699 1.66797 2.41318 1.66797 3.33366C1.66797 4.25413 2.41416 5.00033 3.33464 5.00033Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /> </svg>)
 
     const linkSections = [
-        {
-            title: "PRODUCTS",
-            links: [
-                { text: "Earphones", path: '/', icon: null },
-                { text: "Headphones", path: '/', icon: null },
-                { text: "Smartphones", path: '/', icon: null },
-                { text: "Laptops", path: '/', icon: null },
-            ]
-        },
-        {
-            title: "WEBSITE?",
-            links: [
-                { text: "Home", path: '/', icon: null },
-                { text: "Privacy Policy", path: '/', icon: null },
-                { text: "Become Plus Member", path: '/pricing', icon: null },
-                { text: "Create Your Store", path: '/create-store', icon: null },
-            ]
-        },
+        // {
+        //     title: "PRODUCTS",
+        //     links: [
+        //         { text: "Earphones", path: '/', icon: null },
+        //         { text: "Headphones", path: '/', icon: null },
+        //         { text: "Smartphones", path: '/', icon: null },
+        //         { text: "Laptops", path: '/', icon: null },
+        //     ]
+        // },
         {
             title: "CONTACT",
-            links: [
-                { text: "contact@solarchapter.com", path: '/', icon: MailIcon },
-                // { text: "contact@solarchapter.com", path: '/', icon: PhoneIcon },
-                // { text: "794 Francisco, 94102", path: '/', icon: MapPinIcon }
-            ]
+            links: []
         }
     ];
 
     const socialIcons = [
+        { icon: MailIcon, link: "mailto:contact@solarchapter.com" },
         // { icon: FacebookIcon, link: "https://www.facebook.com" },
         { icon: InstagramIcon, link: "https://www.instagram.com/solarchapter" },
         // { icon: TwitterIcon, link: "https://twitter.com" },
@@ -53,29 +41,21 @@ const Footer = () => {
     return (
         <footer className="mx-6 bg-white">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row items-start justify-between gap-10 py-10 border-b border-slate-500/30 text-slate-500">
-                    <div>
+                <div className="flex flex-col lg:flex-row items-start justify-between gap-8 py-8 border-b border-slate-500/30 text-slate-500">
+                    <div className="flex flex-col sm:flex-row items-start gap-6">
                         <Link href="/">
                             <Image src={logo} alt="Solar Chapter" className="h-20 w-auto" />
                         </Link>
-                        <p className="max-w-[410px] mt-6 text-sm">Solar Chapter is a US 501 (c)(3) public charity | Yayasan Solar Chapter adalah yayasan yang telah sah terdaftar pada Departemen Hukum dan HAM Republik Indonesia</p>
+                        <p className="max-w-[410px] text-sm leading-6">Solar Chapter is a US 501 (c)(3) public charity | Yayasan Solar Chapter adalah yayasan yang telah sah terdaftar pada Departemen Hukum dan HAM Republik Indonesia</p>
                     </div>
-                    <div className="flex flex-wrap justify-between w-full md:w-[45%] gap-5 text-sm ">
+                    <div className="flex flex-wrap justify-between w-full lg:w-auto gap-5 text-sm">
                         {linkSections.map((section, index) => (
-                            <div key={index}>
-                                <h3 className="font-medium text-slate-700 md:mb-5 mb-3">{section.title}</h3>
-                                <ul className="space-y-2.5">
-                                    {section.links.map((link, i) => (
-                                        <li key={i} className="flex items-center gap-2">
-                                            {link.icon && <link.icon />}
-                                            <Link href={link.path} className="hover:underline transition">{link.text}</Link>
-                                        </li>
-                                    ))}
-                                </ul>
+                            <div key={index} className="lg:min-w-80">
+                                <h3 className="font-medium text-slate-700 mb-3">{section.title}</h3>
                                 {section.title === "CONTACT" && (
-                                    <div className="flex items-center gap-3 mt-5">
+                                    <div className="flex items-center gap-3">
                                         {socialIcons.map((item, i) => (
-                                            <Link href={item.link} key={i} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 bg-slate-100 hover:scale-105 hover:border border-slate-300 transition rounded-full">
+                                            <Link href={item.link} key={i} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-9 h-9 bg-slate-100 hover:scale-105 hover:border border-slate-300 transition rounded-full">
                                                 <item.icon />
                                             </Link>
                                         ))}

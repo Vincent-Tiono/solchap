@@ -2,7 +2,7 @@
 import { dummyAdminDashboardData } from "@/assets/assets"
 import Loading from "@/components/Loading"
 import OrdersAreaChart from "@/components/OrdersAreaChart"
-import { CircleDollarSignIcon, ShoppingBasketIcon, StoreIcon, TagsIcon } from "lucide-react"
+import { CircleDollarSignIcon, ShoppingBasketIcon, TagsIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 
 export default function AdminDashboard() {
@@ -14,7 +14,6 @@ export default function AdminDashboard() {
         products: 0,
         revenue: 0,
         orders: 0,
-        stores: 0,
         allOrders: [],
     })
 
@@ -22,7 +21,6 @@ export default function AdminDashboard() {
         { title: 'Total Products', value: dashboardData.products, icon: ShoppingBasketIcon },
         { title: 'Total Revenue', value: currency + dashboardData.revenue, icon: CircleDollarSignIcon },
         { title: 'Total Orders', value: dashboardData.orders, icon: TagsIcon },
-        { title: 'Total Stores', value: dashboardData.stores, icon: StoreIcon },
     ]
 
     const fetchDashboardData = async () => {
