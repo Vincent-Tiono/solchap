@@ -13,6 +13,7 @@ const ORDER_SHEET_NAMES = {
 const INVENTORY_SHEET_NAME = "Inventory";
 const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
 const PAYMENT_PROOF_MAX_SIZE_LABEL = "3 MB";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
 const ORDER_HEADERS = [
     "Product Name",
     "Quantity",
@@ -459,6 +460,7 @@ const getOrderRows = ({
     const cleanCustomerName = String(customerName || "").trim();
     const cleanContact = String(contact || "").trim();
     const cleanContactType = String(contactType || "").trim();
+    const isWhatsappContact = cleanContactType.toLowerCase().includes("whatsapp");
     const cleanEmail = String(email || "").trim();
     const cleanAddress = String(address || "").trim();
     const cleanPaymentProofUrl = String(paymentProofUrl || "").trim();
@@ -475,6 +477,14 @@ const getOrderRows = ({
 
     if (!cleanCustomerName || !cleanContact || !cleanEmail) {
         throw new Error("Name, contact, and email are required.");
+    }
+
+    if (isWhatsappContact && !cleanContact.startsWith("+")) {
+        throw new Error("WhatsApp number must start with +.");
+    }
+
+    if (!EMAIL_PATTERN.test(cleanEmail)) {
+        throw new Error("Valid email is required.");
     }
 
     if (!cleanShippingMethod && !cleanAddress) {

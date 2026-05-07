@@ -47,16 +47,22 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     });
 
     const allDisclaimersAccepted = Object.values(disclaimers).every(Boolean);
+    const trimmedWhatsappCountryCode = whatsappCountryCode.trim();
+    const isWhatsappCountryCodeValid = trimmedWhatsappCountryCode.startsWith('+') && trimmedWhatsappCountryCode.length > 1;
+    const shouldShowWhatsappCountryCodeError = contactMethod === 'whatsapp' && trimmedWhatsappCountryCode.length > 0 && !trimmedWhatsappCountryCode.startsWith('+');
     const isContactComplete = contactMethod === 'whatsapp'
-        ? whatsappCountryCode.trim().startsWith('+') && whatsappCountryCode.trim().length > 1 && whatsappNumber.trim().length > 0
+        ? isWhatsappCountryCodeValid && whatsappNumber.trim().length > 0
         : lineId.trim().length > 0;
     const selectedDeliveryCity = deliveryCity === 'Others'
         ? otherDeliveryCity.trim()
         : deliveryCity.trim();
+    const trimmedEmail = email.trim();
+    const isEmailValid = /^[^\s@]+@[^\s@]+$/.test(trimmedEmail);
+    const shouldShowEmailError = trimmedEmail.length > 0 && !isEmailValid;
     const isShippingInfoComplete = shippingMethod === 'delivery'
         ? selectedDeliveryCity.length > 0 && deliveryAddress.trim().length > 0
         : pickupLocation.trim().length > 0;
-    const isPaymentInfoComplete = customerName.trim().length > 0 && isContactComplete && email.trim().length > 0 && isShippingInfoComplete;
+    const isPaymentInfoComplete = customerName.trim().length > 0 && isContactComplete && isEmailValid && isShippingInfoComplete;
     const deliveryFee = shippingMethod === 'delivery' ? INDONESIA_DELIVERY_FEES[deliveryCity] || 0 : 0;
     const isIndonesiaDelivery = deliveryFee > 0;
     const orderCurrency = isIndonesiaDelivery ? DEFAULT_CURRENCY : activeCurrency;
@@ -101,7 +107,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         if (!isPaymentInfoComplete) {
-            throw new Error('Please complete your name, contact, email, and address before placing your order.');
+            throw new Error('Please complete your name, contact, valid email, and address before placing your order.');
         }
 
         if (!paymentProof) {
@@ -267,7 +273,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                         value={whatsappCountryCode}
                                         onChange={(e) => setWhatsappCountryCode(e.target.value)}
                                         placeholder='+62'
-                                        className='border border-slate-400 p-2 w-24 outline-none rounded text-slate-600'
+                                        aria-invalid={shouldShowWhatsappCountryCodeError}
+                                        className={`border p-2 w-24 outline-none rounded text-slate-600 ${shouldShowWhatsappCountryCodeError ? 'border-red-400' : 'border-slate-400'}`}
                                     />
                                     <input
                                         type="tel"
@@ -277,6 +284,9 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                         className='border border-slate-400 p-2 w-full outline-none rounded text-slate-600'
                                     />
                                 </div>
+                                {shouldShowWhatsappCountryCodeError && (
+                                    <p className='mt-1 text-xs text-red-500'>Please start your WhatsApp country code with +.</p>
+                                )}
                                 <p className='mt-1 text-xs text-slate-400'>Use the + sign followed by your country code, for example +62.</p>
                             </div>
                         ) : (
@@ -295,8 +305,12 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder='Type your email'
-                            className='border border-slate-400 p-2 w-full my-3 outline-none rounded text-slate-600'
+                            aria-invalid={shouldShowEmailError}
+                            className={`border p-2 w-full mt-3 outline-none rounded text-slate-600 ${shouldShowEmailError ? 'border-red-400 mb-1' : 'border-slate-400 mb-3'}`}
                         />
+                        {shouldShowEmailError && (
+                            <p className='mb-3 text-xs text-red-500'>Please enter a valid email with @.</p>
+                        )}
 
                         {shippingMethod === 'delivery' ? (
                             <>
