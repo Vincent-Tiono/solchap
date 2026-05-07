@@ -33,6 +33,7 @@ const DELIVERY_ORDER_HEADERS = [
     "Contact WhatsApp or Line ID",
     "Email",
     "City",
+    "Postal Code",
     "Address",
     "Payment Proof",
     "Submitted At",
@@ -185,9 +186,10 @@ const buildOrderConfirmationEmail = (order) => {
     const customerName = String(order.customerName || "").trim();
     const greeting = customerName ? `Hi ${customerName}!` : "Hi!";
     const isSelfPickup = shippingMethod.toLowerCase() === "self pick-up";
+    const postalCode = String(order.postalCode || "").trim();
     const destination = isSelfPickup
         ? `Self Pick-up: ${String(order.pickupCity || "").trim()}`
-        : [order.deliveryCity, order.address].filter(Boolean).join(" - ");
+        : [order.deliveryCity, postalCode, order.address].filter(Boolean).join(" - ");
     const contactType = String(order.contactType || "").trim().toLowerCase();
     const whatsappNumber = [
         order.whatsappCountryCode,
@@ -433,6 +435,7 @@ const getOrderRows = ({
     shippingMethod,
     deliveryArea,
     deliveryCity,
+    postalCode,
     pickupCity,
     customerName,
     contactType,
@@ -456,6 +459,7 @@ const getOrderRows = ({
     const cleanShippingMethod = String(shippingMethod || "").trim();
     const cleanDeliveryArea = String(deliveryArea || "").trim();
     const cleanDeliveryCity = String(deliveryCity || "").trim();
+    const cleanPostalCode = String(postalCode || "").trim();
     const cleanPickupCity = String(pickupCity || "").trim();
     const cleanCustomerName = String(customerName || "").trim();
     const cleanContact = String(contact || "").trim();
@@ -491,8 +495,8 @@ const getOrderRows = ({
         throw new Error("Address is required.");
     }
 
-    if (cleanShippingMethod && !isSelfPickup && (!cleanDeliveryCity || !cleanAddress)) {
-        throw new Error("Delivery city and address are required.");
+    if (cleanShippingMethod && !isSelfPickup && (!cleanDeliveryCity || !cleanPostalCode || !cleanAddress)) {
+        throw new Error("Delivery city, postal code, and address are required.");
     }
 
     if (isSelfPickup && !cleanPickupCity) {
@@ -519,6 +523,7 @@ const getOrderRows = ({
             contactLabel,
             cleanEmail,
             cityLabel,
+            cleanPostalCode,
             addressLabel,
             cleanPaymentProofUrl,
             submittedAt,
@@ -656,15 +661,15 @@ const updateInventoryStock = async (sheets, spreadsheetId, items) => {
 const ensureOrdersSheet = async (sheets, spreadsheetId, sheetName) => {
     const response = await sheets.spreadsheets.get({
         spreadsheetId,
-        fields: "sheets.properties.title",
+        fields: "sheets.properties",
     });
-    const sheetExists = response.data.sheets?.some((sheet) => sheet.properties?.title === sheetName);
+    const sheet = response.data.sheets?.find((sheet) => sheet.properties?.title === sheetName);
 
-    if (sheetExists) {
-        return;
+    if (typeof sheet?.properties?.sheetId === "number") {
+        return sheet.properties.sheetId;
     }
 
-    await sheets.spreadsheets.batchUpdate({
+    const createResponse = await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
             requests: [
@@ -678,10 +683,61 @@ const ensureOrdersSheet = async (sheets, spreadsheetId, sheetName) => {
             ],
         },
     });
+
+    const sheetId = createResponse.data.replies?.[0]?.addSheet?.properties?.sheetId;
+
+    if (typeof sheetId !== "number") {
+        throw new Error(`Unable to create ${sheetName} sheet.`);
+    }
+
+    return sheetId;
+};
+
+const insertDeliveryPostalCodeColumnIfNeeded = async (sheets, spreadsheetId, sheetName, sheetId, existingHeaders) => {
+    if (sheetName !== ORDER_SHEET_NAMES.delivery) {
+        return existingHeaders;
+    }
+
+    const hasPostalCodeHeader = existingHeaders.some((header) => normalizeHeader(header) === normalizeHeader("Postal Code"));
+
+    if (hasPostalCodeHeader) {
+        return existingHeaders;
+    }
+
+    const addressColumnIndex = existingHeaders.findIndex((header) => normalizeHeader(header) === normalizeHeader("Address"));
+
+    if (addressColumnIndex < 0) {
+        return existingHeaders;
+    }
+
+    await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+            requests: [
+                {
+                    insertDimension: {
+                        range: {
+                            sheetId,
+                            dimension: "COLUMNS",
+                            startIndex: addressColumnIndex,
+                            endIndex: addressColumnIndex + 1,
+                        },
+                        inheritFromBefore: addressColumnIndex > 0,
+                    },
+                },
+            ],
+        },
+    });
+
+    return [
+        ...existingHeaders.slice(0, addressColumnIndex),
+        "",
+        ...existingHeaders.slice(addressColumnIndex),
+    ];
 };
 
 const ensureOrdersHeader = async (sheets, spreadsheetId, sheetName) => {
-    await ensureOrdersSheet(sheets, spreadsheetId, sheetName);
+    const sheetId = await ensureOrdersSheet(sheets, spreadsheetId, sheetName);
 
     const orderHeaders = getOrderHeaders(sheetName);
     const endColumn = getColumnLetter(orderHeaders.length);
@@ -693,10 +749,12 @@ const ensureOrdersHeader = async (sheets, spreadsheetId, sheetName) => {
         range: headerRange,
     });
 
-    const existingHeaders = response.data.values?.[0] || [];
+    let existingHeaders = response.data.values?.[0] || [];
     const hasHeaders = existingHeaders.some((header) => String(header || "").trim());
 
     if (hasHeaders) {
+        existingHeaders = await insertDeliveryPostalCodeColumnIfNeeded(sheets, spreadsheetId, sheetName, sheetId, existingHeaders);
+
         const headersMatch = orderHeaders.every((header, index) => String(existingHeaders[index] || "").trim() === header);
 
         if (!headersMatch || existingHeaders.length < orderHeaders.length) {
@@ -805,7 +863,7 @@ export async function POST(request) {
             ...order,
             paymentProofUrl,
         });
-        const appendRange = sheetName === ORDER_SHEET_NAMES.delivery ? "A:J" : "A:I";
+        const appendRange = sheetName === ORDER_SHEET_NAMES.delivery ? "A:K" : "A:I";
 
         await ensureOrdersHeader(sheets, spreadsheetId, sheetName);
 

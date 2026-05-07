@@ -32,6 +32,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const [email, setEmail] = useState('');
     const [deliveryCity, setDeliveryCity] = useState('');
     const [otherDeliveryCity, setOtherDeliveryCity] = useState('');
+    const [deliveryPostalCode, setDeliveryPostalCode] = useState('');
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [pickupLocation, setPickupLocation] = useState('');
     const [paymentProof, setPaymentProof] = useState(null);
@@ -56,11 +57,12 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const selectedDeliveryCity = deliveryCity === 'Others'
         ? otherDeliveryCity.trim()
         : deliveryCity.trim();
+    const trimmedDeliveryPostalCode = deliveryPostalCode.trim();
     const trimmedEmail = email.trim();
     const isEmailValid = /^[^\s@]+@[^\s@]+$/.test(trimmedEmail);
     const shouldShowEmailError = trimmedEmail.length > 0 && !isEmailValid;
     const isShippingInfoComplete = shippingMethod === 'delivery'
-        ? selectedDeliveryCity.length > 0 && deliveryAddress.trim().length > 0
+        ? selectedDeliveryCity.length > 0 && trimmedDeliveryPostalCode.length > 0 && deliveryAddress.trim().length > 0
         : pickupLocation.trim().length > 0;
     const isPaymentInfoComplete = customerName.trim().length > 0 && isContactComplete && isEmailValid && isShippingInfoComplete;
     const deliveryFee = shippingMethod === 'delivery' ? INDONESIA_DELIVERY_FEES[deliveryCity] || 0 : 0;
@@ -107,7 +109,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         if (!isPaymentInfoComplete) {
-            throw new Error('Please complete your name, contact, valid email, and address before placing your order.');
+            throw new Error('Please complete your name, contact, valid email, postal code, and address before placing your order.');
         }
 
         if (!paymentProof) {
@@ -124,6 +126,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
             : lineId.trim();
         const shippingMethodLabel = shippingMethod === 'delivery' ? 'Delivery' : 'Self Pick-up';
         const orderAddress = shippingMethod === 'delivery' ? deliveryAddress.trim() : '';
+        const orderPostalCode = shippingMethod === 'delivery' ? trimmedDeliveryPostalCode : '';
 
         const orderFormData = new FormData();
 
@@ -141,6 +144,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
             shippingMethod: shippingMethodLabel,
             deliveryArea: shippingMethod === 'delivery' ? deliveryCity : '',
             deliveryCity: shippingMethod === 'delivery' ? selectedDeliveryCity : '',
+            postalCode: orderPostalCode,
             pickupCity: shippingMethod === 'self-pickup' ? pickupLocation.trim() : '',
             customerName: customerName.trim(),
             contactType: contactMethod === 'whatsapp' ? 'WhatsApp' : 'Line ID',
@@ -341,11 +345,20 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     </>
                                 )}
                                 <p className='mt-4'>Address</p>
+                                <input
+                                    type="text"
+                                    value={deliveryPostalCode}
+                                    onChange={(e) => setDeliveryPostalCode(e.target.value)}
+                                    aria-label="Postal code"
+                                    placeholder='Postal code'
+                                    className='border border-slate-400 p-2 w-full mt-3 mb-2 outline-none rounded text-slate-600'
+                                />
                                 <textarea
                                     value={deliveryAddress}
                                     onChange={(e) => setDeliveryAddress(e.target.value)}
+                                    aria-label="Full address"
                                     rows={4}
-                                    placeholder='Please write the full address with postal code to ensure a smooth delivery process'
+                                    placeholder='Please write the full address to ensure a smooth delivery process'
                                     className='border border-slate-400 p-2 w-full my-3 outline-none rounded resize-none text-slate-600'
                                 />
                             </>
