@@ -27,7 +27,7 @@ Now available for pre-order, each kain is made with meaning and purpose. Whether
 
 ## Order Now
 
-Place your pre-order here: [https://solchap-makna.vercel.app/](https://solchap-makna.vercel.app/)
+Place your pre-order here: [[https://scapac-makna.vercel.app/](https://scapac-makna.vercel.app/)
 
 ## Contact
 
