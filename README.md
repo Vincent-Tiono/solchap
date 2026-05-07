@@ -22,18 +22,13 @@ Now available for pre-order, each kain is made with meaning and purpose. Whether
 
 ## Pre-Order Period
 
-Pre-orders are open from:
 
 **May 9, 2026 – June 10, 2026**
 
 ## Order Now
 
-Place your pre-order here:
-
-[https://solchap-makna.vercel.app/](https://solchap-makna.vercel.app/)
+Place your pre-order here: [https://solchap-makna.vercel.app/](https://solchap-makna.vercel.app/)
 
 ## Contact
 
-For questions or order assistance, please contact:
-
-**solchap.makna@gmail.com**
+For questions or order assistance, please contact: **solchap.makna@gmail.com**
