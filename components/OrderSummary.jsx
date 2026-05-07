@@ -13,6 +13,8 @@ const INDONESIA_DELIVERY_FEES = {
     'Indonesia - Jabodetabek': 10000,
     'Indonesia - Outside Jabodetabek': 20000,
 };
+const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
+const PAYMENT_PROOF_MAX_SIZE_LABEL = '3 MB';
 
 const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
 
@@ -73,6 +75,24 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         event.preventDefault();
     }
 
+    const handlePaymentProofChange = (event) => {
+        const file = event.target.files?.[0] || null;
+
+        if (!file) {
+            setPaymentProof(null);
+            return;
+        }
+
+        if (file.size > PAYMENT_PROOF_MAX_SIZE_BYTES) {
+            setPaymentProof(null);
+            event.target.value = '';
+            toast.error(`Payment proof must be ${PAYMENT_PROOF_MAX_SIZE_LABEL} or smaller. Please upload it again.`);
+            return;
+        }
+
+        setPaymentProof(file);
+    }
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
 
@@ -86,6 +106,11 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
 
         if (!paymentProof) {
             throw new Error('Please upload your payment proof before placing your order.');
+        }
+
+        if (paymentProof.size > PAYMENT_PROOF_MAX_SIZE_BYTES) {
+            setPaymentProof(null);
+            throw new Error(`Payment proof must be ${PAYMENT_PROOF_MAX_SIZE_LABEL} or smaller. Please upload your payment proof again.`);
         }
 
         const contact = contactMethod === 'whatsapp'
@@ -428,11 +453,11 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
+                                onChange={handlePaymentProofChange}
                                 className='hidden'
                             />
                             <span className='text-slate-600 font-medium'>{paymentProof ? paymentProof.name : 'Upload image'}</span>
-                            <span className='text-xs text-slate-400 mt-1'>Accepted formats: JPG, PNG, WEBP</span>
+                            <span className='text-xs text-slate-400 mt-1'>Accepted formats: JPG, PNG, WEBP. Max size: {PAYMENT_PROOF_MAX_SIZE_LABEL}</span>
                         </label>
                     </div>
                     <div className='space-y-2 pb-4'>

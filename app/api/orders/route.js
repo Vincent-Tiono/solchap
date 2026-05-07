@@ -11,6 +11,8 @@ const ORDER_SHEET_NAMES = {
     selfPickup: "Orders-Self-pickup",
 };
 const INVENTORY_SHEET_NAME = "Inventory";
+const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
+const PAYMENT_PROOF_MAX_SIZE_LABEL = "3 MB";
 const ORDER_HEADERS = [
     "Product Name",
     "Quantity",
@@ -185,6 +187,15 @@ const buildOrderConfirmationEmail = (order) => {
     const destination = isSelfPickup
         ? `Self Pick-up: ${String(order.pickupCity || "").trim()}`
         : [order.deliveryCity, order.address].filter(Boolean).join(" - ");
+    const contactType = String(order.contactType || "").trim().toLowerCase();
+    const whatsappNumber = [
+        order.whatsappCountryCode,
+        order.whatsappNumber,
+    ].map((value) => String(value || "").trim()).filter(Boolean).join(" ") || String(order.contact || "").trim();
+    const lineId = String(order.lineId || order.contact || "").trim();
+    const contactLabel = contactType.includes("line") ? "Line ID" : "Whatsapp Number";
+    const contactValue = contactType.includes("line") ? lineId : whatsappNumber;
+    const contactLine = contactValue ? `${contactLabel}: ${contactValue}` : "";
     const itemLines = items.map((item) => {
         const itemPrice = Number.isFinite(item.price) ? ` - ${formatOrderAmount(item.price, currency)} each` : "";
 
@@ -214,8 +225,9 @@ const buildOrderConfirmationEmail = (order) => {
         deliveryFee > 0 ? `Delivery fee: ${deliveryFeeLabel}` : null,
         shippingMethod ? `Shipping method: ${shippingMethod}` : null,
         destination ? `Destination: ${destination}` : null,
+        contactLine || null,
         "",
-        "Our team will contact you with delivery or pick-up details.",
+        "Our team will contact you with delivery or pick-up details. The receipt will be sent to you after we confirm the order.",
         "",
         "Solar Chapter",
     ].filter((line) => line !== null && line !== undefined).join("\n");
@@ -225,7 +237,7 @@ const buildOrderConfirmationEmail = (order) => {
             <div style="max-width: 620px; margin: 0 auto; padding: 32px 20px;">
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px;">
                     <h1 style="margin: 0 0 12px; color: #0f172a; font-size: 24px; line-height: 1.3;">${escapeHtml(greeting)}</h1>
-                    <p style="margin: 0 0 24px; line-height: 1.6;">We have received your order and payment proof. Our team will contact you with delivery or pick-up details.</p>
+                    <p style="margin: 0 0 24px; line-height: 1.6;">We have received your order and payment proof. Our team will contact you with the delivery or pick-up details. The receipt will be sent after your order is confirmed.</p>
 
                     <h2 style="margin: 0 0 12px; color: #0f172a; font-size: 18px;">Order Summary</h2>
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
@@ -245,6 +257,7 @@ const buildOrderConfirmationEmail = (order) => {
                     ${deliveryFee > 0 ? `<p style="margin: 0 0 8px;"><strong>Delivery fee:</strong> ${escapeHtml(deliveryFeeLabel)}</p>` : ""}
                     ${shippingMethod ? `<p style="margin: 0 0 8px;"><strong>Shipping method:</strong> ${escapeHtml(shippingMethod)}</p>` : ""}
                     ${destination ? `<p style="margin: 0 0 8px;"><strong>Destination:</strong> ${escapeHtml(destination)}</p>` : ""}
+                    ${contactValue ? `<p style="margin: 0 0 8px;"><strong>${escapeHtml(contactLabel)}:</strong> ${escapeHtml(contactValue)}</p>` : ""}
 
                     <p style="margin: 24px 0 0; color: #64748b; font-size: 13px; line-height: 1.6;">If any details are incorrect, please reply to this email.</p>
                     ${logoDataUri ? `
@@ -712,6 +725,10 @@ const uploadPaymentProof = async (drive, paymentProof) => {
 
     if (!paymentProof.type?.startsWith("image/")) {
         throw new Error("Payment proof must be an image file.");
+    }
+
+    if (paymentProof.size > PAYMENT_PROOF_MAX_SIZE_BYTES) {
+        throw new Error(`Payment proof must be ${PAYMENT_PROOF_MAX_SIZE_LABEL} or smaller. Please upload your payment proof again.`);
     }
 
     const buffer = Buffer.from(await paymentProof.arrayBuffer());

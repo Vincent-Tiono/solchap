@@ -53,7 +53,7 @@ const Navbar = () => {
                     <div className="hidden sm:flex items-center gap-4 lg:gap-8 text-slate-600">
                         <Link href="/">Home</Link>
                         <Link href="/shop">Shop</Link>
-                        <Link href="/">About</Link>
+                        {/* <Link href="/">About</Link> */}
                         {/* <Link href="/">Contact</Link> */}
 
                         <form onSubmit={handleSearch} className="hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
@@ -92,7 +92,7 @@ const Navbar = () => {
                         <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-sm">
                             <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/">Home</Link>
                             <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/shop">Shop</Link>
-                            <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/">About</Link>
+                            {/* <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/">About</Link> */}
 
                             <form onSubmit={handleSearch} className="mt-2 flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
                                 <Search size={18} className="text-slate-600" />
