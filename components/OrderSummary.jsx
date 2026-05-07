@@ -414,7 +414,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
             ) : checkoutStep === 'confirmation' ? (
                 <div className='space-y-5 pt-4 text-slate-500'>
                     <p className='leading-6'>
-                        An order confirmation email has been sent to your inbox: <span className='font-medium text-slate-700'>{confirmedEmail}</span>. If you do not receive it or have any questions about your order, please contact <span className='font-medium text-slate-700'>solchap.makna@gmail.com</span>
+                        An order confirmation email has been sent to your inbox: <span className='font-medium text-slate-700'>{confirmedEmail}</span>. If you do not receive it, please check your spam folder or contact us at <span className='font-medium text-slate-700'>solchap.makna@gmail.com</span>
                     </p>
                     <button
                         onClick={() => router.push('/')}
