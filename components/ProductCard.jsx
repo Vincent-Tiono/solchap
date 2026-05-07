@@ -8,7 +8,7 @@ import { formatPrice, getProductPrice } from '@/lib/currency'
 const ProductCard = ({ product }) => {
 
     const selectedCurrency = useSelector(state => state.currency.selected)
-    const isOutOfStock = product.inStock === false;
+    const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const price = getProductPrice(product, selectedCurrency)
 
     return (

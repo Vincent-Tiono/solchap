@@ -1,6 +1,6 @@
 'use client'
 import logo from "@/assets/logo.png";
-import { Search, ShoppingCart } from "lucide-react";
+import { Menu, Search, ShoppingCart, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,10 +13,12 @@ const Navbar = () => {
     const router = useRouter();
 
     const [search, setSearch] = useState('')
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const cartCount = useSelector(state => state.cart.total)
 
     const handleSearch = (e) => {
         e.preventDefault()
+        setMobileMenuOpen(false)
         router.push(`/shop?search=${search}`)
     }
 
@@ -30,6 +32,16 @@ const Navbar = () => {
                     </Link>
 
                     <div className="flex items-center gap-3 sm:hidden">
+                        <button
+                            type="button"
+                            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                            aria-expanded={mobileMenuOpen}
+                            aria-controls="mobile-nav-menu"
+                            onClick={() => setMobileMenuOpen((open) => !open)}
+                            className="inline-flex size-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-400"
+                        >
+                            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                        </button>
                         <CurrencySelector className="px-2 py-1.5 text-xs" />
                         <Link href="/cart" className="relative flex items-center text-slate-600">
                             <ShoppingCart size={20} />
@@ -74,6 +86,21 @@ const Navbar = () => {
                         </div>
                     */}
                 </div>
+
+                {mobileMenuOpen && (
+                    <div id="mobile-nav-menu" className="sm:hidden pb-4">
+                        <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-600 shadow-sm">
+                            <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/">Home</Link>
+                            <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/shop">Shop</Link>
+                            <Link onClick={() => setMobileMenuOpen(false)} className="rounded-md px-3 py-2 hover:bg-slate-100" href="/">About</Link>
+
+                            <form onSubmit={handleSearch} className="mt-2 flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
+                                <Search size={18} className="text-slate-600" />
+                                <input className="w-full bg-transparent outline-none placeholder-slate-600" type="text" placeholder="Search products" value={search} onChange={(e) => setSearch(e.target.value)} required />
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
             <hr className="border-gray-300" />
         </nav>

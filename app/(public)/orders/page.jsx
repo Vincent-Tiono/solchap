@@ -1,4 +1,10 @@
 'use client'
+
+export default function Orders() {
+    return null;
+}
+
+/*
 import PageTitle from "@/components/PageTitle"
 import { useEffect, useState } from "react";
 import OrderItem from "@/components/OrderItem";
@@ -44,3 +50,4 @@ export default function Orders() {
         </div>
     )
 }
+*/

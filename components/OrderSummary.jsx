@@ -14,7 +14,7 @@ const INDONESIA_DELIVERY_FEES = {
     'Indonesia - Outside Jabodetabek': 20000,
 };
 
-const OrderSummary = ({ totalPrice, items, currencyCode }) => {
+const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
 
     const activeCurrency = currencyCode || DEFAULT_CURRENCY;
     const router = useRouter();
@@ -34,6 +34,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode }) => {
     const [pickupLocation, setPickupLocation] = useState('');
     const [paymentProof, setPaymentProof] = useState(null);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [confirmedEmail, setConfirmedEmail] = useState('');
     // const [showAddressModal, setShowAddressModal] = useState(false);
     const [couponCodeInput, setCouponCodeInput] = useState('');
     const [coupon, setCoupon] = useState('');
@@ -131,13 +132,17 @@ const OrderSummary = ({ totalPrice, items, currencyCode }) => {
             throw new Error(data.error || 'Unable to save order.');
         }
 
-        dispatch(clearCart())
-        router.push('/orders')
+        setConfirmedEmail(email.trim());
+        setCheckoutStep('confirmation');
+        onOrderComplete?.();
+        dispatch(clearCart());
     }
 
     return (
         <div className='w-full max-w-lg lg:max-w-[600px] bg-slate-50/30 border border-slate-200 text-slate-500 text-sm rounded-xl p-7'>
-            <h2 className='text-xl font-medium text-slate-600'>Payment Summary</h2>
+            {checkoutStep !== 'confirmation' && (
+                <h2 className='text-xl font-medium text-slate-600'>Payment Summary</h2>
+            )}
 
             {checkoutStep === 'disclaimers' ? (
                 <>
@@ -381,6 +386,18 @@ const OrderSummary = ({ totalPrice, items, currencyCode }) => {
 
                     {/* {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />} */}
                 </>
+            ) : checkoutStep === 'confirmation' ? (
+                <div className='space-y-5 pt-4 text-slate-500'>
+                    <p className='leading-6'>
+                        An order confirmation email has been sent to your inbox: <span className='font-medium text-slate-700'>{confirmedEmail}</span>. If you do not receive it or have any questions about your order, please contact <span className='font-medium text-slate-700'>solchap.makna@gmail.com</span>
+                    </p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all'
+                    >
+                        Back to Home
+                    </button>
+                </div>
             ) : (
                 <>
                     <button onClick={() => setCheckoutStep('payment')} className='text-xs text-slate-400 hover:text-slate-700 mt-2'> &lt; Back to contact</button>

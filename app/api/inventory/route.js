@@ -16,8 +16,14 @@ const getRequiredEnv = (key) => {
 };
 
 const parseStock = (value) => {
-    const stock = Number(value || 0);
-    return Number.isFinite(stock) ? stock : 0;
+    const normalizedValue = String(value ?? "").trim().replace(/,/g, "");
+
+    if (!normalizedValue) {
+        return null;
+    }
+
+    const stock = Number(normalizedValue);
+    return Number.isFinite(stock) ? stock : null;
 };
 
 const normalizePrivateKey = (value) => {
@@ -59,7 +65,7 @@ export async function GET() {
                     productId,
                     productName: productName || "",
                     stock: quantity,
-                    inStock: quantity > 0,
+                    inStock: quantity === null ? null : quantity > 0,
                 };
             });
 

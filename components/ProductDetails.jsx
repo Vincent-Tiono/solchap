@@ -25,8 +25,8 @@ const ProductDetails = ({ product }) => {
 
     const [mainImage, setMainImage] = useState(product.images[0]);
     const [isCheckingStock, setIsCheckingStock] = useState(false);
-    const isOutOfStock = product.inStock === false;
-    const stockLeft = typeof product.stock === 'number' ? product.stock : null;
+    const isOutOfStock = product.inventorySynced === true && product.stock === 0;
+    const stockLeft = product.inventorySynced === true && typeof product.stock === 'number' ? product.stock : null;
     const price = getProductPrice(product, selectedCurrency);
 
     const addToCartHandler = () => {
@@ -59,7 +59,11 @@ const ProductDetails = ({ product }) => {
             }
 
             const requestedQuantity = cart[productId] || 0;
-            const latestStock = Number(latestProductInventory.stock || 0);
+            const latestStock = typeof latestProductInventory.stock === 'number' ? latestProductInventory.stock : null;
+
+            if (latestStock === null) {
+                throw new Error('Unable to verify stock for this product. Please try again.');
+            }
 
             if (requestedQuantity > latestStock) {
                 toast.error(`Only ${latestStock} item${latestStock === 1 ? '' : 's'} left. Please update your quantity.`);

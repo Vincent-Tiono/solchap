@@ -19,6 +19,7 @@ export default function Cart() {
 
     const [cartArray, setCartArray] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
 
     const createCartArray = () => {
         setTotalPrice(0);
@@ -48,16 +49,17 @@ export default function Cart() {
         }
     }, [cartItems, products, selectedCurrency]);
 
-    return cartArray.length > 0 ? (
+    return cartArray.length > 0 || isCheckoutComplete ? (
         <div className="min-h-screen mx-6 text-slate-800">
 
             <div className="max-w-7xl mx-auto ">
-                {/* Title */}
-                <PageTitle heading="My Cart" text="items in your cart" linkText="Add more" />
+                <div className={isCheckoutComplete ? 'hidden' : ''}>
+                    <PageTitle heading="My Cart" text="items in your cart" linkText="Add more" />
+                </div>
 
-                <div className="flex items-start justify-between gap-8 max-lg:flex-col">
+                <div className={`flex items-start gap-8 max-lg:flex-col ${isCheckoutComplete ? 'justify-center py-20' : 'justify-between'}`}>
 
-                    <div className="sticky top-24 w-full max-w-3xl self-start max-lg:static">
+                    <div className={`${isCheckoutComplete ? 'hidden' : 'sticky'} top-24 w-full max-w-3xl self-start max-lg:static`}>
                         <table className="w-full text-slate-600 table-auto">
                             <thead>
                                 <tr className="max-sm:text-sm">
@@ -95,7 +97,7 @@ export default function Cart() {
                             </tbody>
                         </table>
                     </div>
-                    <OrderSummary totalPrice={totalPrice} items={cartArray} currencyCode={selectedCurrency} />
+                    <OrderSummary totalPrice={totalPrice} items={cartArray} currencyCode={selectedCurrency} onOrderComplete={() => setIsCheckoutComplete(true)} />
                 </div>
             </div>
         </div>
