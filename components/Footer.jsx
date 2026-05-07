@@ -30,9 +30,9 @@ const Footer = () => {
     ];
 
     const socialIcons = [
-        { icon: MailIcon, link: "mailto:contact@solarchapter.com" },
+        { icon: MailIcon, link: "mailto:solchap.makna@gmail.com" },
         // { icon: FacebookIcon, link: "https://www.facebook.com" },
-        { icon: InstagramIcon, link: "https://www.instagram.com/solarchapter" },
+        { icon: InstagramIcon, link: "https://www.instagram.com/solarchapter.apac/" },
         // { icon: TwitterIcon, link: "https://twitter.com" },
         { icon: LinkedinIcon, link: "https://www.linkedin.com/company/solar-chapter/" },
         { icon: YoutubeIcon, link: "https://www.youtube.com/channel/UCqj1kNOurGHy6yCgGqtC2fQ" },
