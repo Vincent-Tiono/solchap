@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assests/logo.png" alt="Kain Makna Logo" width="180" />
+  <img src="assets/logo.png" alt="Kain Makna Logo" width="180" />
 </p>
 
 <h1 align="center">Kain Makna</h1>
