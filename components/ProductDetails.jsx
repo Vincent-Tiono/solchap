@@ -23,7 +23,7 @@ const ProductDetails = ({ product }) => {
 
     const router = useRouter()
 
-    const [mainImage, setMainImage] = useState(product.images[0]);
+    const [mainImage] = useState(product.images[0]);
     const [isCheckingStock, setIsCheckingStock] = useState(false);
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const stockLeft = product.inventorySynced === true && typeof product.stock === 'number' ? product.stock : null;
@@ -83,20 +83,26 @@ const ProductDetails = ({ product }) => {
     return (
         <div className="flex max-lg:flex-col gap-12">
             <div className="flex max-sm:flex-col-reverse gap-3">
-                <div className="flex sm:flex-col gap-3">
+                {/* <div className="flex sm:flex-col gap-3">
                     {product.images.map((image, index) => (
                         <div key={index} onClick={() => setMainImage(product.images[index])} className="bg-slate-100 flex items-center justify-center size-26 rounded-lg group cursor-pointer">
                             <Image src={image} className={`group-hover:scale-103 group-active:scale-95 transition ${isOutOfStock ? 'grayscale opacity-50' : ''}`} alt="" width={45} height={45} />
                         </div>
                     ))}
-                </div>
-                <div className="relative flex justify-center items-center h-100 sm:size-113 bg-slate-100 rounded-lg ">
+                </div> */}
+                <div className="relative flex justify-center items-center h-auto sm:w-113 sm:h-86 bg-slate-100 rounded-lg overflow-hidden">
                     {isOutOfStock && (
                         <span className="absolute top-5 left-5 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-white">
                             Out of stock
                         </span>
                     )}
-                    <Image src={mainImage} alt="" width={250} height={250} className={isOutOfStock ? 'grayscale opacity-50' : ''} />
+                    <Image
+                    src={mainImage}
+                    alt=""
+                    width={800}
+                    height={800}
+                    className={`w-[100%] h-auto ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
+                    />
                 </div>
             </div>
             <div className="flex-1">
