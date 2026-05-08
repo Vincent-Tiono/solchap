@@ -100,7 +100,8 @@ const ProductDetails = ({ product }) => {
                     src={mainImage}
                     alt=""
                     width={800}
-                    height={800}
+                    height={566}
+                    sizes="(max-width: 639px) calc(100vw - 48px), 452px"
                     className={`relative z-0 w-[100%] h-auto ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
                     />
                     {isOutOfStock && (

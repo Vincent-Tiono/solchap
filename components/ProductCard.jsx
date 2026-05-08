@@ -19,7 +19,14 @@ const ProductCard = ({ product }) => {
                         Out of stock
                     </span>
                 )}
-                <Image width={500} height={500} className={`relative z-0 w-full h-auto max-h-full object-contain group-hover:scale-115 transition duration-300 ${isOutOfStock ? 'grayscale opacity-50' : ''}`} src={product.images[0]} alt="" />
+                <Image
+                    width={500}
+                    height={354}
+                    sizes="(max-width: 639px) calc(50vw - 36px), 240px"
+                    className={`relative z-0 w-full h-auto max-h-full object-contain group-hover:scale-115 transition duration-300 ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
+                    src={product.images[0]}
+                    alt=""
+                />
                 {isOutOfStock && (
                     <div className="pointer-events-none absolute inset-0 z-[5] bg-slate-200/45" />
                 )}

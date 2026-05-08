@@ -5,8 +5,8 @@ import hero_product_img1 from "./hero_product_img1.png"
 import hero_product_img2 from "./hero_product_img2.png"
 import { ClockFadingIcon, HeadsetIcon, SendIcon } from "lucide-react";
 
-const maknaImages = Array.from({ length: 30 }, (_, index) => `/kain_makna/${index + 1}.png`)
-const maknaBlindBoxImage = "/kain_makna/blind_box.png"
+const maknaImages = Array.from({ length: 30 }, (_, index) => `/kain_makna/optimized/${index + 1}.webp`)
+const maknaBlindBoxImage = "/kain_makna/optimized/blind_box.webp"
 
 export const assets = {
     upload_area, hero_model_img,
