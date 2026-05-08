@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // import { PlusIcon } from 'lucide-react';
 // import AddressModal from './AddressModal';
 import toast from 'react-hot-toast';
@@ -46,11 +46,17 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         deliveryTiming: false,
         limitedStock: false,
     });
+    const [showDisclaimerError, setShowDisclaimerError] = useState(false);
+    const [showPaymentInfoError, setShowPaymentInfoError] = useState(false);
+    const [showPaymentProofError, setShowPaymentProofError] = useState(false);
 
     const allDisclaimersAccepted = Object.values(disclaimers).every(Boolean);
     const trimmedWhatsappCountryCode = whatsappCountryCode.trim();
     const isWhatsappCountryCodeValid = trimmedWhatsappCountryCode.startsWith('+') && trimmedWhatsappCountryCode.length > 1;
-    const shouldShowWhatsappCountryCodeError = contactMethod === 'whatsapp' && trimmedWhatsappCountryCode.length > 0 && !trimmedWhatsappCountryCode.startsWith('+');
+    const isCustomerNameMissing = customerName.trim().length === 0;
+    const isWhatsappNumberMissing = contactMethod === 'whatsapp' && whatsappNumber.trim().length === 0;
+    const isLineIdMissing = contactMethod === 'line' && lineId.trim().length === 0;
+    const shouldShowWhatsappCountryCodeError = contactMethod === 'whatsapp' && (trimmedWhatsappCountryCode.length > 0 || showPaymentInfoError) && !isWhatsappCountryCodeValid;
     const isContactComplete = contactMethod === 'whatsapp'
         ? isWhatsappCountryCodeValid && whatsappNumber.trim().length > 0
         : lineId.trim().length > 0;
@@ -60,7 +66,12 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const trimmedDeliveryPostalCode = deliveryPostalCode.trim();
     const trimmedEmail = email.trim();
     const isEmailValid = /^[^\s@]+@[^\s@]+$/.test(trimmedEmail);
-    const shouldShowEmailError = trimmedEmail.length > 0 && !isEmailValid;
+    const shouldShowEmailError = (trimmedEmail.length > 0 || showPaymentInfoError) && !isEmailValid;
+    const isDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity.trim().length === 0;
+    const isOtherDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity === 'Others' && otherDeliveryCity.trim().length === 0;
+    const isDeliveryPostalCodeMissing = shippingMethod === 'delivery' && trimmedDeliveryPostalCode.length === 0;
+    const isDeliveryAddressMissing = shippingMethod === 'delivery' && deliveryAddress.trim().length === 0;
+    const isPickupLocationMissing = shippingMethod === 'self-pickup' && pickupLocation.trim().length === 0;
     const isShippingInfoComplete = shippingMethod === 'delivery'
         ? selectedDeliveryCity.length > 0 && trimmedDeliveryPostalCode.length > 0 && deliveryAddress.trim().length > 0
         : pickupLocation.trim().length > 0;
@@ -78,6 +89,12 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const deliveryFeeMessage = deliveryFee > 0
         ? `Shipment to ${deliveryCity} will incur a ${deliveryFee.toLocaleString('en-US')} IDR delivery fee.`
         : '';
+
+    useEffect(() => {
+        if (isPaymentInfoComplete) {
+            setShowPaymentInfoError(false);
+        }
+    }, [isPaymentInfoComplete]);
 
     const handleCouponCode = async (event) => {
         event.preventDefault();
@@ -99,6 +116,63 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         setPaymentProof(file);
+        setShowPaymentProofError(false);
+    }
+
+    const handleDisclaimerChange = (key, checked) => {
+        const nextDisclaimers = {
+            ...disclaimers,
+            [key]: checked,
+        };
+
+        setDisclaimers(nextDisclaimers);
+
+        if (Object.values(nextDisclaimers).every(Boolean)) {
+            setShowDisclaimerError(false);
+        }
+    }
+
+    const handleProceedToPayment = () => {
+        if (!allDisclaimersAccepted) {
+            setShowDisclaimerError(true);
+            return;
+        }
+
+        setShowDisclaimerError(false);
+        setCheckoutStep('payment');
+    }
+
+    const handleUploadPaymentProof = () => {
+        if (!isPaymentInfoComplete) {
+            setShowPaymentInfoError(true);
+            return;
+        }
+
+        setShowPaymentInfoError(false);
+        setCheckoutStep('payment-proof');
+    }
+
+    const handleFinishOrder = (e) => {
+        if (!paymentProof) {
+            setShowPaymentProofError(true);
+            return;
+        }
+
+        toast.promise(
+            (async () => {
+                setIsPlacingOrder(true);
+                try {
+                    await handlePlaceOrder(e);
+                } finally {
+                    setIsPlacingOrder(false);
+                }
+            })(),
+            {
+                loading: 'Finishing order...',
+                success: 'Order saved.',
+                error: (error) => error.message,
+            }
+        );
     }
 
     const handlePlaceOrder = async (e) => {
@@ -187,8 +261,9 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <input
                                 type="checkbox"
                                 checked={disclaimers.productAccuracy}
-                                onChange={(e) => setDisclaimers({ ...disclaimers, productAccuracy: e.target.checked })}
-                                className='mt-1 accent-slate-700'
+                                onChange={(e) => handleDisclaimerChange('productAccuracy', e.target.checked)}
+                                aria-invalid={showDisclaimerError && !disclaimers.productAccuracy}
+                                className={`mt-1 accent-slate-700 ${showDisclaimerError && !disclaimers.productAccuracy ? 'outline outline-2 outline-red-500 outline-offset-1' : ''}`}
                             />
                             <span>I understand that the measurement and the color of Kain Makna may be not perfectly accurate as described or shown on this form.</span>
                         </label>
@@ -196,8 +271,9 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <input
                                 type="checkbox"
                                 checked={disclaimers.deliveryTiming}
-                                onChange={(e) => setDisclaimers({ ...disclaimers, deliveryTiming: e.target.checked })}
-                                className='mt-1 accent-slate-700'
+                                onChange={(e) => handleDisclaimerChange('deliveryTiming', e.target.checked)}
+                                aria-invalid={showDisclaimerError && !disclaimers.deliveryTiming}
+                                className={`mt-1 accent-slate-700 ${showDisclaimerError && !disclaimers.deliveryTiming ? 'outline outline-2 outline-red-500 outline-offset-1' : ''}`}
                             />
                             <span>I understand that since Kain Makna is made locally in Nusa Tenggara Timur and the products are currently placed in Kupang, delivery will take some time and the receiving time will range from late May to June. Solar Chapter will make sure to inform the delivery and distribution details in a timely manner to each customer.</span>
                         </label>
@@ -205,13 +281,17 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <input
                                 type="checkbox"
                                 checked={disclaimers.limitedStock}
-                                onChange={(e) => setDisclaimers({ ...disclaimers, limitedStock: e.target.checked })}
-                                className='mt-1 accent-slate-700'
+                                onChange={(e) => handleDisclaimerChange('limitedStock', e.target.checked)}
+                                aria-invalid={showDisclaimerError && !disclaimers.limitedStock}
+                                className={`mt-1 accent-slate-700 ${showDisclaimerError && !disclaimers.limitedStock ? 'outline outline-2 outline-red-500 outline-offset-1' : ''}`}
                             />
                             <span>I understand that some products might be limited or not ready in stock because of high demand from other customers. Hence, Solar Chapter may contact the customer to inform them about product availability if this situation happens. Only under this situation, the customer has the right to switch the design of Kain Makna or ask for a refund.</span>
                         </label>
                     </div>
-                    <button disabled={!allDisclaimersAccepted} onClick={() => setCheckoutStep('payment')} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:bg-slate-300 disabled:active:scale-100'>Proceed to Payment</button>
+                    {showDisclaimerError && (
+                        <p className='mb-3 text-xs text-red-500'>Please check all three agreements before proceeding.</p>
+                    )}
+                    <button onClick={handleProceedToPayment} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all'>Proceed to Payment</button>
                 </>
             ) : checkoutStep === 'payment' ? (
                 <>
@@ -255,7 +335,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder='Type your name'
-                            className='border border-slate-400 p-2 w-full mb-4 outline-none rounded text-slate-600'
+                            aria-invalid={showPaymentInfoError && isCustomerNameMissing}
+                            className={`border p-2 w-full mb-4 outline-none rounded text-slate-600 ${showPaymentInfoError && isCustomerNameMissing ? 'border-red-400' : 'border-slate-400'}`}
                         />
 
                         <p className='mb-3'>Contact</p>
@@ -285,7 +366,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                         value={whatsappNumber}
                                         onChange={(e) => setWhatsappNumber(e.target.value)}
                                         placeholder='WhatsApp number'
-                                        className='border border-slate-400 p-2 w-full outline-none rounded text-slate-600'
+                                        aria-invalid={showPaymentInfoError && isWhatsappNumberMissing}
+                                        className={`border p-2 w-full outline-none rounded text-slate-600 ${showPaymentInfoError && isWhatsappNumberMissing ? 'border-red-400' : 'border-slate-400'}`}
                                     />
                                 </div>
                                 {shouldShowWhatsappCountryCodeError && (
@@ -299,7 +381,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 value={lineId}
                                 onChange={(e) => setLineId(e.target.value)}
                                 placeholder='Line ID'
-                                className='border border-slate-400 p-2 w-full mt-3 outline-none rounded text-slate-600'
+                                aria-invalid={showPaymentInfoError && isLineIdMissing}
+                                className={`border p-2 w-full mt-3 outline-none rounded text-slate-600 ${showPaymentInfoError && isLineIdMissing ? 'border-red-400' : 'border-slate-400'}`}
                             />
                         )}
 
@@ -322,7 +405,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 <select
                                     value={deliveryCity}
                                     onChange={(e) => setDeliveryCity(e.target.value)}
-                                    className='border border-slate-400 p-2 w-full my-3 outline-none rounded text-slate-600 bg-white'
+                                    aria-invalid={showPaymentInfoError && isDeliveryCityMissing}
+                                    className={`border p-2 w-full my-3 outline-none rounded text-slate-600 bg-white ${showPaymentInfoError && isDeliveryCityMissing ? 'border-red-400' : 'border-slate-400'}`}
                                 >
                                     <option value="">Select city</option>
                                     {DELIVERY_CITY_OPTIONS.map((city) => (
@@ -339,7 +423,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                             value={otherDeliveryCity}
                                             onChange={(e) => setOtherDeliveryCity(e.target.value)}
                                             placeholder='Type your city'
-                                            className='border border-slate-400 p-2 w-full mb-3 outline-none rounded text-slate-600'
+                                            aria-invalid={showPaymentInfoError && isOtherDeliveryCityMissing}
+                                            className={`border p-2 w-full mb-3 outline-none rounded text-slate-600 ${showPaymentInfoError && isOtherDeliveryCityMissing ? 'border-red-400' : 'border-slate-400'}`}
                                         />
                                         <p className='-mt-1 mb-3 text-xs leading-5 text-slate-400'>Other shipments incur a delivery fee. Our team will contact you to confirm the fee and arrange delivery.</p>
                                     </>
@@ -350,16 +435,18 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     value={deliveryPostalCode}
                                     onChange={(e) => setDeliveryPostalCode(e.target.value)}
                                     aria-label="Postal code"
+                                    aria-invalid={showPaymentInfoError && isDeliveryPostalCodeMissing}
                                     placeholder='Postal code'
-                                    className='border border-slate-400 p-2 w-full mt-3 mb-2 outline-none rounded text-slate-600'
+                                    className={`border p-2 w-full mt-3 mb-2 outline-none rounded text-slate-600 ${showPaymentInfoError && isDeliveryPostalCodeMissing ? 'border-red-400' : 'border-slate-400'}`}
                                 />
                                 <textarea
                                     value={deliveryAddress}
                                     onChange={(e) => setDeliveryAddress(e.target.value)}
                                     aria-label="Full address"
+                                    aria-invalid={showPaymentInfoError && isDeliveryAddressMissing}
                                     rows={4}
                                     placeholder='Please write the full address to ensure a smooth delivery process'
-                                    className='border border-slate-400 p-2 w-full my-3 outline-none rounded resize-none text-slate-600'
+                                    className={`border p-2 w-full my-3 outline-none rounded resize-none text-slate-600 ${showPaymentInfoError && isDeliveryAddressMissing ? 'border-red-400' : 'border-slate-400'}`}
                                 />
                             </>
                         ) : (
@@ -375,7 +462,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                                 value={location}
                                                 checked={pickupLocation === location}
                                                 onChange={(e) => setPickupLocation(e.target.value)}
-                                                className='accent-gray-500'
+                                                aria-invalid={showPaymentInfoError && isPickupLocationMissing}
+                                                className={`accent-gray-500 ${showPaymentInfoError && isPickupLocationMissing ? 'outline outline-2 outline-red-500 outline-offset-1' : ''}`}
                                             />
                                             {location}
                                         </label>
@@ -434,7 +522,10 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <p className='font-medium text-right'>{formattedOrderTotal}</p>
                         </div>
                     </div>
-                    <button disabled={!isPaymentInfoComplete} onClick={() => setCheckoutStep('payment-proof')} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:bg-slate-300 disabled:active:scale-100'>Upload Payment Proof</button>
+                    {showPaymentInfoError && (
+                        <p className='mb-3 text-xs text-red-500'>Please complete all required fields before proceeding.</p>
+                    )}
+                    <button onClick={handleUploadPaymentProof} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all'>Upload Payment Proof</button>
 
                     {/* {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />} */}
                 </>
@@ -477,16 +568,20 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                         </div>
                         <hr className='border-slate-200 mb-5' />
                         <p className='text-slate-400 mb-3'>Payment Proof</p>
-                        <label className='flex flex-col items-center justify-center border border-dashed border-slate-400 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-100/60 transition'>
+                        <label className={`flex flex-col items-center justify-center border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-slate-100/60 transition ${showPaymentProofError && !paymentProof ? 'border-red-400' : 'border-slate-400'}`}>
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handlePaymentProofChange}
+                                aria-invalid={showPaymentProofError && !paymentProof}
                                 className='hidden'
                             />
                             <span className='text-slate-600 font-medium'>{paymentProof ? paymentProof.name : 'Upload image'}</span>
                             <span className='text-xs text-slate-400 mt-1'>Accepted formats: JPG, PNG, WEBP. Max size: {PAYMENT_PROOF_MAX_SIZE_LABEL}</span>
                         </label>
+                        {showPaymentProofError && !paymentProof && (
+                            <p className='mt-3 text-xs text-red-500'>Please upload payment proof before proceeding.</p>
+                        )}
                     </div>
                     <div className='space-y-2 pb-4'>
                         {isIndonesiaDelivery && (
@@ -501,22 +596,8 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                         </div>
                     </div>
                     <button
-                        disabled={!paymentProof || isPlacingOrder}
-                        onClick={e => toast.promise(
-                            (async () => {
-                                setIsPlacingOrder(true);
-                                try {
-                                    await handlePlaceOrder(e);
-                                } finally {
-                                    setIsPlacingOrder(false);
-                                }
-                            })(),
-                            {
-                                loading: 'Finishing order...',
-                                success: 'Order saved.',
-                                error: (error) => error.message,
-                            }
-                        )}
+                        disabled={isPlacingOrder}
+                        onClick={handleFinishOrder}
                         className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all disabled:cursor-not-allowed disabled:bg-slate-300 disabled:hover:bg-slate-300 disabled:active:scale-100'
                     >
                         {isPlacingOrder ? 'Finishing...' : 'Finish'}
