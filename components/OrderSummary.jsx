@@ -439,9 +439,10 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                     {/* {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />} */}
                 </>
             ) : checkoutStep === 'confirmation' ? (
-                <div className='space-y-5 pt-4 text-slate-500'>
-                    <p className='leading-6'>
-                        An order confirmation email has been sent to your inbox: <span className='font-medium text-slate-700'>{confirmedEmail}</span>. If you do not receive it, please check your spam folder or contact us at <span className='font-medium text-slate-700'>solchap.makna@gmail.com</span>
+                <div className='space-y-5 pt-4 text-center text-slate-500 sm:text-left'>
+                    <p className='text-base leading-7'>
+                        <span className='font-semibold text-slate-700'>Important:</span><br />
+                        An order confirmation email has been sent to your inbox: <span className='font-medium text-slate-700'>{confirmedEmail}</span>. If you do not receive it, please <span className='font-semibold text-red-600'>check your spam folder</span> or contact us at <span className='font-medium text-slate-700'>solchap.makna@gmail.com</span>.
                     </p>
                     <button
                         onClick={() => router.push('/')}

@@ -57,7 +57,7 @@ export default function Cart() {
                     <PageTitle heading="My Cart" text="items in your cart" linkText="Add more" />
                 </div>
 
-                <div className={`flex items-start gap-8 max-lg:flex-col ${isCheckoutComplete ? 'justify-center py-20' : 'justify-between'}`}>
+                <div className={`flex items-start gap-8 max-lg:flex-col ${isCheckoutComplete ? 'justify-center py-20 max-lg:items-center' : 'justify-between'}`}>
 
                     <div className={`${isCheckoutComplete ? 'hidden' : 'sticky'} top-24 w-full max-w-3xl self-start max-lg:static`}>
                         <table className="w-full text-slate-600 table-auto">

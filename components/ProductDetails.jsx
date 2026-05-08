@@ -92,7 +92,7 @@ const ProductDetails = ({ product }) => {
                 </div> */}
                 <div className="relative flex justify-center items-center h-auto sm:w-113 sm:h-86 bg-slate-100 rounded-lg overflow-hidden">
                     {isOutOfStock && (
-                        <span className="absolute top-5 left-5 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-white">
+                        <span className="absolute top-5 left-5 z-10 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-white">
                             Out of stock
                         </span>
                     )}
@@ -101,8 +101,11 @@ const ProductDetails = ({ product }) => {
                     alt=""
                     width={800}
                     height={800}
-                    className={`w-[100%] h-auto ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
+                    className={`relative z-0 w-[100%] h-auto ${isOutOfStock ? 'grayscale opacity-50' : ''}`}
                     />
+                    {isOutOfStock && (
+                        <div className="pointer-events-none absolute inset-0 z-[5] bg-slate-200/45" />
+                    )}
                 </div>
             </div>
             <div className="flex-1">
