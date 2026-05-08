@@ -15,6 +15,17 @@ const INDONESIA_DELIVERY_FEES = {
 };
 const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
 const PAYMENT_PROOF_MAX_SIZE_LABEL = '3 MB';
+const CHECKOUT_STORAGE_KEY = 'solchap.checkout';
+const CHECKOUT_STEPS = new Set(['disclaimers', 'payment', 'payment-proof']);
+const SHIPPING_METHODS = new Set(['delivery', 'self-pickup']);
+const CONTACT_METHODS = new Set(['whatsapp', 'line']);
+const DEFAULT_DISCLAIMERS = {
+    productAccuracy: false,
+    deliveryTiming: false,
+    limitedStock: false,
+};
+
+const getStoredString = (value) => typeof value === 'string' ? value : '';
 
 const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
 
@@ -41,14 +52,11 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     // const [showAddressModal, setShowAddressModal] = useState(false);
     const [couponCodeInput, setCouponCodeInput] = useState('');
     const [coupon, setCoupon] = useState('');
-    const [disclaimers, setDisclaimers] = useState({
-        productAccuracy: false,
-        deliveryTiming: false,
-        limitedStock: false,
-    });
+    const [disclaimers, setDisclaimers] = useState(DEFAULT_DISCLAIMERS);
     const [showDisclaimerError, setShowDisclaimerError] = useState(false);
     const [showPaymentInfoError, setShowPaymentInfoError] = useState(false);
     const [showPaymentProofError, setShowPaymentProofError] = useState(false);
+    const [isCheckoutDraftHydrated, setIsCheckoutDraftHydrated] = useState(false);
 
     const allDisclaimersAccepted = Object.values(disclaimers).every(Boolean);
     const trimmedWhatsappCountryCode = whatsappCountryCode.trim();
@@ -89,6 +97,105 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const deliveryFeeMessage = deliveryFee > 0
         ? `Shipment to ${deliveryCity} will incur a ${deliveryFee.toLocaleString('en-US')} IDR delivery fee.`
         : '';
+
+    useEffect(() => {
+        try {
+            const storedDraft = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
+
+            if (!storedDraft) {
+                return;
+            }
+
+            const draft = JSON.parse(storedDraft);
+
+            if (!draft || typeof draft !== 'object') {
+                return;
+            }
+
+            if (CHECKOUT_STEPS.has(draft.checkoutStep)) {
+                setCheckoutStep(draft.checkoutStep);
+            }
+
+            if (SHIPPING_METHODS.has(draft.shippingMethod)) {
+                setShippingMethod(draft.shippingMethod);
+            }
+
+            if (CONTACT_METHODS.has(draft.contactMethod)) {
+                setContactMethod(draft.contactMethod);
+            }
+
+            setCustomerName(getStoredString(draft.customerName));
+            setWhatsappCountryCode(getStoredString(draft.whatsappCountryCode));
+            setWhatsappNumber(getStoredString(draft.whatsappNumber));
+            setLineId(getStoredString(draft.lineId));
+            setEmail(getStoredString(draft.email));
+            setDeliveryCity(getStoredString(draft.deliveryCity));
+            setOtherDeliveryCity(getStoredString(draft.otherDeliveryCity));
+            setDeliveryPostalCode(getStoredString(draft.deliveryPostalCode));
+            setDeliveryAddress(getStoredString(draft.deliveryAddress));
+            setPickupLocation(getStoredString(draft.pickupLocation));
+
+            if (draft.disclaimers && typeof draft.disclaimers === 'object') {
+                setDisclaimers({
+                    productAccuracy: Boolean(draft.disclaimers.productAccuracy),
+                    deliveryTiming: Boolean(draft.disclaimers.deliveryTiming),
+                    limitedStock: Boolean(draft.disclaimers.limitedStock),
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load checkout draft from local storage:', error);
+        } finally {
+            setIsCheckoutDraftHydrated(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isCheckoutDraftHydrated) {
+            return;
+        }
+
+        try {
+            if (checkoutStep === 'confirmation') {
+                window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+                return;
+            }
+
+            window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify({
+                checkoutStep,
+                shippingMethod,
+                contactMethod,
+                customerName,
+                whatsappCountryCode,
+                whatsappNumber,
+                lineId,
+                email,
+                deliveryCity,
+                otherDeliveryCity,
+                deliveryPostalCode,
+                deliveryAddress,
+                pickupLocation,
+                disclaimers,
+            }));
+        } catch (error) {
+            console.error('Failed to save checkout draft to local storage:', error);
+        }
+    }, [
+        checkoutStep,
+        shippingMethod,
+        contactMethod,
+        customerName,
+        whatsappCountryCode,
+        whatsappNumber,
+        lineId,
+        email,
+        deliveryCity,
+        otherDeliveryCity,
+        deliveryPostalCode,
+        deliveryAddress,
+        pickupLocation,
+        disclaimers,
+        isCheckoutDraftHydrated,
+    ]);
 
     useEffect(() => {
         if (isPaymentInfoComplete) {
@@ -243,8 +350,19 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
 
         setConfirmedEmail(email.trim());
         setCheckoutStep('confirmation');
+        window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
         onOrderComplete?.();
         dispatch(clearCart());
+    }
+
+    if (!isCheckoutDraftHydrated) {
+        return (
+            <div className='w-full max-w-lg lg:max-w-[600px] bg-slate-50/30 border border-slate-200 text-slate-500 text-sm rounded-xl p-7'>
+                <div className='flex items-center justify-center py-20'>
+                    <div className='w-8 h-8 rounded-full border-2 border-gray-300 border-t-slate-600 animate-spin'></div>
+                </div>
+            </div>
+        );
     }
 
     return (

@@ -1,5 +1,6 @@
 'use client'
 import Counter from "@/components/Counter";
+import Loading from "@/components/Loading";
 import OrderSummary from "@/components/OrderSummary";
 import PageTitle from "@/components/PageTitle";
 import { deleteItemFromCart } from "@/lib/features/cart/cartSlice";
@@ -9,9 +10,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { formatPrice, getProductPrice } from "@/lib/currency";
 
+const CHECKOUT_STORAGE_KEY = 'solchap.checkout';
+
 export default function Cart() {
 
-    const { cartItems } = useSelector(state => state.cart);
+    const { cartItems, hasHydrated } = useSelector(state => state.cart);
     const products = useSelector(state => state.product.list);
     const selectedCurrency = useSelector(state => state.currency.selected);
 
@@ -48,6 +51,18 @@ export default function Cart() {
             createCartArray();
         }
     }, [cartItems, products, selectedCurrency]);
+
+    useEffect(() => {
+        if (!hasHydrated || isCheckoutComplete || Object.keys(cartItems).length > 0) {
+            return;
+        }
+
+        window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+    }, [cartItems, hasHydrated, isCheckoutComplete]);
+
+    if (!hasHydrated) {
+        return <Loading />
+    }
 
     return cartArray.length > 0 || isCheckoutComplete ? (
         <div className="min-h-screen mx-6 text-slate-800">
