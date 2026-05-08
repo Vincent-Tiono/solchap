@@ -199,7 +199,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 onChange={(e) => setDisclaimers({ ...disclaimers, deliveryTiming: e.target.checked })}
                                 className='mt-1 accent-slate-700'
                             />
-                            <span>I understand that since Kain Makna is made locally in Nusa Tenggara Timur and the products are currently placed in Kupang, delivery will take some time and the receiving time will range from June to July. Solar Chapter will make sure to inform the delivery and distribution details in a timely manner to each customer.</span>
+                            <span>I understand that since Kain Makna is made locally in Nusa Tenggara Timur and the products are currently placed in Kupang, delivery will take some time and the receiving time will range from late May to June. Solar Chapter will make sure to inform the delivery and distribution details in a timely manner to each customer.</span>
                         </label>
                         <label className='flex items-start gap-2'>
                             <input
