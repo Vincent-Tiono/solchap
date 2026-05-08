@@ -1,0 +1,11 @@
+        {
+        id: "makna_1",
+        name: "Blind Box (between Makna 1-35)",
+        description: "Length: 60cm, Width: 10cm",
+        // mrp: 40,
+        prices: { IDR: 200000, HKD: 120, NTD: 400 },
+        images: [maknaImages[0]],
+        inStock: true,
+        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+    },

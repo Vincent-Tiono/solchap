@@ -3,185 +3,41 @@ import upload_area from "./upload_area.svg"
 import hero_model_img from "./hero_model_img.png"
 import hero_product_img1 from "./hero_product_img1.png"
 import hero_product_img2 from "./hero_product_img2.png"
-import product_img1 from "./product_img1.png"
-import product_img2 from "./product_img2.png"
-import product_img3 from "./product_img3.png"
-import product_img4 from "./product_img4.png"
-import product_img5 from "./product_img5.png"
-import product_img6 from "./product_img6.png"
-import product_img7 from "./product_img7.png"
-import product_img8 from "./product_img8.png"
-import product_img9 from "./product_img9.png"
-import product_img10 from "./product_img10.png"
-import product_img11 from "./product_img11.png"
-import product_img12 from "./product_img12.png"
 import { ClockFadingIcon, HeadsetIcon, SendIcon } from "lucide-react";
-import makna_1 from "./makna_1.png"
-import makna_2 from "./makna_2.png"
+
+const maknaImages = Array.from({ length: 30 }, (_, index) => `/kain_makna/${index + 1}.png`)
+const maknaBlindBoxImage = "/kain_makna/blind_box.png"
 
 export const assets = {
     upload_area, hero_model_img,
     hero_product_img1, hero_product_img2, gs_logo,
-    product_img1, product_img2, product_img3, product_img4, product_img5, product_img6,
-    product_img7, product_img8, product_img9, product_img10, product_img11, product_img12,
 }
 
 export const productDummyData = [
-        {
-        id: "makna_1",
-        name: "Blind Box (between Makna 1-35)",
+    {
+        id: "makna_bb",
+        name: "Kain Makna Blind Box",
         description: "Length: 60cm, Width: 10cm",
         // mrp: 40,
         prices: { IDR: 200000, HKD: 120, NTD: 400 },
-        images: [makna_1],
-        inStock: false,
-        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
-        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
-    },
-    {
-        id: "makna_2",
-        name: "Kain Makna 2",
-        description: "Length: 60cm, Width: 10cm",
-        // mrp: 40,
-        prices: { IDR: 250000, HKD: 150, NTD: 500 },
-        images: [makna_2],
+        images: [maknaBlindBoxImage],
         inStock: true,
         createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
         updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
     },
-    // {
-    //     id: "prod_1",
-    //     name: "Modern table lamp",
-    //     description: "Modern table lamp with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty. Enhance your audio experience with this earbuds. Indulge yourself in a world of pure sound with 50 hours of uninterrupted playtime. Equipped with the cutting-edge Zen Mode Tech ENC and BoomX Tech, prepare to be enthralled by a symphony of crystal-clear melodies.",
-    //     // mrp: 40,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img1, product_img2, product_img3, product_img4],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_2",
-    //     name: "Smart speaker gray",
-    //     description: "Smart speaker with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 50,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img2],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 28 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 28 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_3",
-    //     name: "Smart watch white",
-    //     description: "Smart watch with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 60,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img3],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 27 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 27 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_4",
-    //     name: "Wireless headphones",
-    //     description: "Wireless headphones with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 70,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img4],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 26 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 26 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_5",
-    //     name: "Smart watch black",
-    //     description: "Smart watch with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 49,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img5],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 25 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 25 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_6",
-    //     name: "Security Camera",
-    //     description: "Security Camera with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 59,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img6],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 25 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 25 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_7",
-    //     name: "Smart Pen for iPad",
-    //     description: "Smart Pen for iPad with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 89,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img7],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 24 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 24 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_8",
-    //     name: "Home Theater",
-    //     description: "Home Theater with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 99,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img8],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 23 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 23 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_9",
-    //     name: "Apple Wireless Earbuds",
-    //     description: "Apple Wireless Earbuds with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 89,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img9],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 22 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 22 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_10",
-    //     name: "Apple Smart Watch",
-    //     description: "Apple Smart Watch with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 179,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img10],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 21 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 21 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_11",
-    //     name: "RGB Gaming Mouse",
-    //     description: "RGB Gaming Mouse with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 39,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img11],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 20 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 20 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // },
-    // {
-    //     id: "prod_12",
-    //     name: "Smart Home Cleaner",
-    //     description: "Smart Home Cleaner with a sleek design. It's perfect for any room. It's made of high-quality materials and comes with a lifetime warranty.",
-    //     // mrp: 199,
-    //     prices: { IDR: 450000, HKD: 230, NTD: 950 },
-    //     images: [product_img12],
-    //     inStock: true,
-    //     createdAt: 'Sat Jul 19 2025 14:51:25 GMT+0530 (India Standard Time)',
-    //     updatedAt: 'Sat Jul 19 2025 14:51:25 GMT+0530 (India Standard Time)',
-    // }
-];
+    ...Array.from({ length: 30 }, (_, index) => ({
+        id: `makna_${index + 1}`,
+        name: `Kain Makna ${index + 1}`,
+        description: "Length: 60cm, Width: 10cm",
+        // mrp: 40,
+        prices: { IDR: 250000, HKD: 150, NTD: 500 },
+        images: [maknaImages[index]],
+        inStock: true,
+        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+    })),
+]
+
 
 export const ourSpecsData = [
     { title: "Free Shipping", description: "Enjoy fast, free delivery on every order no conditions, just reliable doorstep.", icon: SendIcon, accent: '#05DF72' },
