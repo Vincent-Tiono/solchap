@@ -28,7 +28,7 @@ export const productDummyData = [
     ...Array.from({ length: 30 }, (_, index) => ({
         id: `makna_${index + 1}`,
         name: `Kain Makna ${index + 1}`,
-        description: "Length: 60cm, Width: 10cm",
+        description: "Length: 60cm, Width: 15-20cm",
         // mrp: 40,
         prices: { IDR: 250000, HKD: 150, NTD: 500 },
         images: [maknaImages[index]],
