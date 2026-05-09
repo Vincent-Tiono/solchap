@@ -17,7 +17,7 @@ export const productDummyData = [
     {
         id: "makna_bb",
         name: "Kain Makna Blind Box",
-        description: "Length: 60cm, Width: 10cm",
+        description: "Length: 60cm, Width: 15-20cm",
         // mrp: 40,
         prices: { IDR: 200000, HKD: 120, NTD: 400 },
         images: [maknaBlindBoxImage],
