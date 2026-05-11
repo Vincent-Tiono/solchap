@@ -14,6 +14,7 @@ const INVENTORY_SHEET_NAME = "Inventory";
 const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
 const PAYMENT_PROOF_MAX_SIZE_LABEL = "3 MB";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
+const POSTAL_CODE_PATTERN = /^\d+$/;
 const ORDER_HEADERS = [
     "Product Name",
     "Quantity",
@@ -497,6 +498,10 @@ const getOrderRows = ({
 
     if (cleanShippingMethod && !isSelfPickup && (!cleanDeliveryCity || !cleanPostalCode || !cleanAddress)) {
         throw new Error("Delivery city, postal code, and address are required.");
+    }
+
+    if (cleanShippingMethod && !isSelfPickup && !POSTAL_CODE_PATTERN.test(cleanPostalCode)) {
+        throw new Error("Postal code must contain numbers only.");
     }
 
     if (isSelfPickup && !cleanPickupCity) {

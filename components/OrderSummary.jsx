@@ -19,6 +19,7 @@ const CHECKOUT_STORAGE_KEY = 'solchap.checkout';
 const CHECKOUT_STEPS = new Set(['disclaimers', 'payment', 'payment-proof']);
 const SHIPPING_METHODS = new Set(['delivery', 'self-pickup']);
 const CONTACT_METHODS = new Set(['whatsapp', 'line']);
+const POSTAL_CODE_PATTERN = /^\d+$/;
 const DEFAULT_DISCLAIMERS = {
     productAccuracy: false,
     deliveryTiming: false,
@@ -78,10 +79,12 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
     const isDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity.trim().length === 0;
     const isOtherDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity === 'Others' && otherDeliveryCity.trim().length === 0;
     const isDeliveryPostalCodeMissing = shippingMethod === 'delivery' && trimmedDeliveryPostalCode.length === 0;
+    const isDeliveryPostalCodeInvalid = shippingMethod === 'delivery' && deliveryPostalCode.length > 0 && !POSTAL_CODE_PATTERN.test(deliveryPostalCode);
+    const shouldShowDeliveryPostalCodeError = (showPaymentInfoError && isDeliveryPostalCodeMissing) || isDeliveryPostalCodeInvalid;
     const isDeliveryAddressMissing = shippingMethod === 'delivery' && deliveryAddress.trim().length === 0;
     const isPickupLocationMissing = shippingMethod === 'self-pickup' && pickupLocation.trim().length === 0;
     const isShippingInfoComplete = shippingMethod === 'delivery'
-        ? selectedDeliveryCity.length > 0 && trimmedDeliveryPostalCode.length > 0 && deliveryAddress.trim().length > 0
+        ? selectedDeliveryCity.length > 0 && trimmedDeliveryPostalCode.length > 0 && !isDeliveryPostalCodeInvalid && deliveryAddress.trim().length > 0
         : pickupLocation.trim().length > 0;
     const isPaymentInfoComplete = customerName.trim().length > 0 && isContactComplete && isEmailValid && isShippingInfoComplete;
     const deliveryFee = shippingMethod === 'delivery' ? INDONESIA_DELIVERY_FEES[deliveryCity] || 0 : 0;
@@ -290,7 +293,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         if (!isPaymentInfoComplete) {
-            throw new Error('Please complete your name, contact, valid email, postal code, and address before placing your order.');
+            throw new Error('Please complete your name, contact, valid email, valid postal code, and address before placing your order.');
         }
 
         if (!paymentProof) {
@@ -550,13 +553,18 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 <p className='mt-4'>Address</p>
                                 <input
                                     type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={deliveryPostalCode}
                                     onChange={(e) => setDeliveryPostalCode(e.target.value)}
                                     aria-label="Postal code"
-                                    aria-invalid={showPaymentInfoError && isDeliveryPostalCodeMissing}
+                                    aria-invalid={shouldShowDeliveryPostalCodeError}
                                     placeholder='Postal code'
-                                    className={`border p-2 w-full mt-3 mb-2 outline-none rounded text-slate-600 ${showPaymentInfoError && isDeliveryPostalCodeMissing ? 'border-red-400' : 'border-slate-400'}`}
+                                    className={`border p-2 w-full mt-3 outline-none rounded text-slate-600 ${shouldShowDeliveryPostalCodeError ? 'border-red-400 mb-1' : 'border-slate-400 mb-2'}`}
                                 />
+                                {isDeliveryPostalCodeInvalid && (
+                                    <p className='mb-2 text-xs text-red-500'>Please enter a valid postal code with numbers only.</p>
+                                )}
                                 <textarea
                                     value={deliveryAddress}
                                     onChange={(e) => setDeliveryAddress(e.target.value)}
