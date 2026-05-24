@@ -23,7 +23,7 @@ Now available for pre-order, each kain is made with meaning and purpose. Whether
 ## Pre-Order Period
 
 
-**May 9 - May 23, 2026**
+**May 9 - May 31, 2026**
 
 ## Order Now
 
