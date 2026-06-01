@@ -12,6 +12,7 @@ import { formatPrice, getProductPrice } from "@/lib/currency";
 import toast from "react-hot-toast";
 
 const STOCK_CHECK_BUFFER_MS = 1200;
+const PRE_ORDER_END_DATE = new Date('2026-05-31T23:59:59.999Z');
 
 const ProductDetails = ({ product }) => {
 
@@ -25,6 +26,7 @@ const ProductDetails = ({ product }) => {
 
     const [mainImage] = useState(product.images[0]);
     const [isCheckingStock, setIsCheckingStock] = useState(false);
+    const isPreOrderOpen = new Date() <= PRE_ORDER_END_DATE;
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const stockLeft = product.inventorySynced === true && typeof product.stock === 'number' ? product.stock : null;
     const price = getProductPrice(product, selectedCurrency);
@@ -131,8 +133,8 @@ const ProductDetails = ({ product }) => {
                             </div>
                         )
                     }
-                    <button disabled={isOutOfStock || isCheckingStock} onClick={() => !cart[productId] ? addToCartHandler() : viewCartHandler()} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300 disabled:active:scale-100">
-                        {isOutOfStock ? 'Out of Stock' : isCheckingStock ? 'Checking Stock...' : !cart[productId] ? 'Add to Cart' : 'View Cart'}
+                    <button disabled={!cart[productId] && (isOutOfStock || isCheckingStock || !isPreOrderOpen)} onClick={() => !cart[productId] ? addToCartHandler() : viewCartHandler()} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300 disabled:active:scale-100">
+                        {!cart[productId] ? (isOutOfStock ? 'Out of Stock' : isCheckingStock ? 'Checking Stock...' : !isPreOrderOpen ? 'Pre-Order Closed' : 'Add to Cart') : 'View Cart'}
                     </button>
                 </div>
             </div>
