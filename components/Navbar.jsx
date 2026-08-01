@@ -27,8 +27,9 @@ const Navbar = () => {
             <div className="mx-6">
                 <div className="flex items-center justify-between max-w-7xl mx-auto py-4  transition-all">
 
-                    <Link href="/">
+                    <Link href="/" className="flex flex-col">
                         <Image src={logo} alt="Solar Chapter" className="h-14 w-auto" />
+                        <span className="text-[10px] tracking-widest text-slate-400 uppercase">Kain Makna Collection</span>
                     </Link>
 
                     <div className="flex items-center gap-3 sm:hidden">

@@ -8,11 +8,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Counter from "./Counter";
 import { useDispatch, useSelector } from "react-redux";
-import { formatPrice, getProductPrice } from "@/lib/currency";
+import { formatPrice, getOriginalPrice, getProductPrice, hasEarlyBirdDiscount } from "@/lib/currency";
 import toast from "react-hot-toast";
 
 const STOCK_CHECK_BUFFER_MS = 1200;
-const PRE_ORDER_END_DATE = new Date('2026-05-31T23:59:59.999Z');
+const PRE_ORDER_END_DATE = new Date('2026-08-23T23:59:59.999Z');
 
 const ProductDetails = ({ product }) => {
 
@@ -30,6 +30,8 @@ const ProductDetails = ({ product }) => {
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const stockLeft = product.inventorySynced === true && typeof product.stock === 'number' ? product.stock : null;
     const price = getProductPrice(product, selectedCurrency);
+    const isEarlyBird = hasEarlyBirdDiscount(product);
+    const originalPrice = getOriginalPrice(product, selectedCurrency);
 
     const addToCartHandler = () => {
         if (isOutOfStock) return;
@@ -113,8 +115,14 @@ const ProductDetails = ({ product }) => {
             </div>
             <div className="flex-1">
                 <h1 className="text-3xl font-semibold text-slate-800">{product.name}</h1>
-                <div className="flex items-start my-6 text-2xl font-semibold text-slate-800">
-                    <p> {formatPrice(price, selectedCurrency)} </p>
+                <div className="flex items-center gap-3 my-6">
+                    {isEarlyBird && (
+                        <span className="text-lg text-slate-400 line-through">{formatPrice(originalPrice, selectedCurrency)}</span>
+                    )}
+                    <p className={`text-2xl font-semibold ${isEarlyBird ? 'text-red-600' : 'text-slate-800'}`}>{formatPrice(price, selectedCurrency)}</p>
+                    {isEarlyBird && (
+                        <span className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white">Early Bird</span>
+                    )}
                 </div>
                 {stockLeft !== null && (
                     <div className="flex items-center gap-2 text-slate-500">

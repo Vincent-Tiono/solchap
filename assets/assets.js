@@ -5,8 +5,9 @@ import hero_product_img1 from "./hero_product_img1.png"
 import hero_product_img2 from "./hero_product_img2.png"
 import { ClockFadingIcon, HeadsetIcon, SendIcon } from "lucide-react";
 
-const maknaImages = Array.from({ length: 30 }, (_, index) => `/kain_makna/optimized/${index + 1}.webp`)
-const maknaBlindBoxImage = "/kain_makna/optimized/blind_box.webp"
+const maknaImages = Array.from({ length: 22 }, (_, index) => `/kain_makna/optimized_po2/${index + 1}.webp`)
+const maknaTwImages = Array.from({ length: 9 }, (_, index) => `/kain_makna/optimized_po2/tw_${index + 1}.webp`)
+const maknaBlindBoxImage = "/kain_makna/optimized_po2/blind_box.webp"
 
 export const assets = {
     upload_area, hero_model_img,
@@ -19,19 +20,33 @@ export const productDummyData = [
         name: "Kain Makna Blind Box",
         description: "Length: 60cm, Width: 15-20cm",
         // mrp: 40,
-        prices: { IDR: 200000, HKD: 120, NTD: 400 },
+        prices: { IDR: 275000, HKD: 175, NTD: 550 },
+        earlyBirdPrices: { IDR: 250000, HKD: 150, NTD: 500 },
         images: [maknaBlindBoxImage],
         inStock: true,
         createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
         updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
     },
-    ...Array.from({ length: 30 }, (_, index) => ({
+    ...Array.from({ length: 22 }, (_, index) => ({
         id: `makna_${index + 1}`,
         name: `Kain Makna ${index + 1}`,
+        description: index + 1 >= 21 ? "Length: 60cm, Width: 35cm" : "Length: 60cm, Width: 15-20cm",
+        // mrp: 40,
+        prices: { IDR: 300000, HKD: 200, NTD: 600 },
+        earlyBirdPrices: { IDR: 275000, HKD: 175, NTD: 550 },
+        images: [maknaImages[index]],
+        inStock: true,
+        createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+        updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
+    })),
+    ...Array.from({ length: 9 }, (_, index) => ({
+        id: `tw_makna_${index + 1}`,
+        name: `Kain Makna TW ${index + 1}`,
         description: "Length: 60cm, Width: 15-20cm",
         // mrp: 40,
-        prices: { IDR: 250000, HKD: 150, NTD: 500 },
-        images: [maknaImages[index]],
+        prices: { IDR: 300000, HKD: 200, NTD: 600 },
+        earlyBirdPrices: { IDR: 275000, HKD: 175, NTD: 550 },
+        images: [maknaTwImages[index]],
         inStock: true,
         createdAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',
         updatedAt: 'Sat Jul 29 2025 14:51:25 GMT+0530 (India Standard Time)',

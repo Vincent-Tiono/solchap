@@ -3,13 +3,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { formatPrice, getProductPrice } from '@/lib/currency'
+import { formatPrice, getOriginalPrice, getProductPrice, hasEarlyBirdDiscount } from '@/lib/currency'
 
 const ProductCard = ({ product }) => {
 
     const selectedCurrency = useSelector(state => state.currency.selected)
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const price = getProductPrice(product, selectedCurrency)
+    const isEarlyBird = hasEarlyBirdDiscount(product)
+    const originalPrice = getOriginalPrice(product, selectedCurrency)
 
     return (
         <Link href={`/product/${product.id}`} className='group block w-full min-w-0 sm:w-60 max-xl:mx-auto'>
@@ -35,7 +37,12 @@ const ProductCard = ({ product }) => {
                 <div className='min-w-0 flex-1'>
                     <p className='leading-snug'>{product.name}</p>
                 </div>
-                <p className='shrink-0'>{formatPrice(price, selectedCurrency)}</p>
+                <div className='shrink-0 flex items-center gap-1.5'>
+                    {isEarlyBird && (
+                        <p className='text-slate-400 line-through text-xs'>{formatPrice(originalPrice, selectedCurrency)}</p>
+                    )}
+                    <p className={isEarlyBird ? 'text-red-600 font-medium' : ''}>{formatPrice(price, selectedCurrency)}</p>
+                </div>
             </div>
         </Link>
     )
