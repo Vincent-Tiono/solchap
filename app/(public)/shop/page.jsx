@@ -47,7 +47,7 @@ import { useSelector } from "react-redux"
                                     onClick={() => scrollToSection(normalSectionRef)}
                                     className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:border-[#123f19] hover:text-[#123f19]"
                                 >
-                                    Signature series
+                                    Signature Series
                                 </button>
                                 {twProducts.length > 0 && (
                                     <button
@@ -73,7 +73,6 @@ import { useSelector } from "react-redux"
                 <div ref={normalSectionRef} className="flex items-end justify-between gap-4 border-b border-slate-800 pb-2 mb-6 scroll-mt-24">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                         <h2 className="text-xl sm:text-2xl text-slate-800">Signature Series</h2>
-                        <span className="text-xs tracking-widest text-slate-400 uppercase">Nos. 1–22 &amp; Blind Box</span>
                     </div>
                     <span className="text-sm text-slate-400 whitespace-nowrap">{normalProducts.length} pieces</span>
                 </div>
