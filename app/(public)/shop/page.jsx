@@ -15,6 +15,9 @@ import { useSelector } from "react-redux"
     const [hideSoldOut, setHideSoldOut] = useState(false)
     const normalSectionRef = useRef(null)
     const twSectionRef = useRef(null)
+    const wideSectionRef = useRef(null)
+
+    const WIDE_NAMES = ['Kain Makna 21', 'Kain Makna 22']
 
     const products = useSelector(state => state.product.list)
 
@@ -27,8 +30,9 @@ import { useSelector } from "react-redux"
         : products
     ).filter(product => !hideSoldOut || !isOutOfStock(product));
 
-    const normalProducts = filteredProducts.filter(product => !product.id.startsWith('tw_'))
     const twProducts = filteredProducts.filter(product => product.id.startsWith('tw_'))
+    const wideProducts = filteredProducts.filter(product => !product.id.startsWith('tw_') && WIDE_NAMES.includes(product.name))
+    const normalProducts = filteredProducts.filter(product => !product.id.startsWith('tw_') && !WIDE_NAMES.includes(product.name))
 
     const scrollToSection = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
@@ -49,6 +53,14 @@ import { useSelector } from "react-redux"
                                 >
                                     Signature Series
                                 </button>
+                                {wideProducts.length > 0 && (
+                                    <button
+                                        onClick={() => scrollToSection(wideSectionRef)}
+                                        className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:border-[#123f19] hover:text-[#123f19]"
+                                    >
+                                        Wider Version
+                                    </button>
+                                )}
                                 {twProducts.length > 0 && (
                                     <button
                                         onClick={() => scrollToSection(twSectionRef)}
@@ -79,6 +91,19 @@ import { useSelector } from "react-redux"
                 <div className="grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12 mx-auto mb-12">
                     {normalProducts.map((product) => <ProductCard key={product.id} product={product} />)}
                 </div>
+                {wideProducts.length > 0 && (
+                    <>
+                        <div ref={wideSectionRef} className="relative w-full rounded-lg bg-[#123f19] px-6 py-6 mb-12 overflow-hidden scroll-mt-24">
+                            <span className="pointer-events-none absolute -right-2 top-1/2 -translate-y-1/2 text-8xl sm:text-9xl font-bold text-[#f4efe8]/10 select-none leading-none">21·22</span>
+                            <p className="text-xs font-semibold tracking-widest text-[#d9d1c5] uppercase">{wideProducts.length} Pieces</p>
+                            <h2 className="mt-1 text-xl sm:text-2xl text-[#f4efe8]">Wider Version (New!)</h2>
+                            <p className="mt-1 text-sm text-[#d9d1c5]">Length 60cm, Width <span className="line-through opacity-60">20cm</span> <span className="font-semibold text-[#f4efe8]">35cm</span></p>
+                        </div>
+                        <div className={`grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12 mx-auto ${twProducts.length > 0 ? 'mb-12' : 'mb-32'}`}>
+                            {wideProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+                        </div>
+                    </>
+                )}
                 {twProducts.length > 0 && (
                     <>
                         <div ref={twSectionRef} className="relative w-full rounded-lg bg-[#123f19] px-6 py-6 mb-12 overflow-hidden scroll-mt-24">
