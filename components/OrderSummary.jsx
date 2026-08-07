@@ -5,184 +5,23 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '@/lib/features/cart/cartSlice';
-import { DEFAULT_CURRENCY, formatPrice, getProductPrice } from '@/lib/currency';
+import { DEFAULT_CURRENCY } from '@/lib/currency';
+import {
+    PICKUP_LOCATIONS,
+    DELIVERY_CITY_OPTIONS,
+    PAYMENT_PROOF_MAX_SIZE_BYTES,
+    PAYMENT_PROOF_MAX_SIZE_LABEL,
+    useCheckoutDraft,
+} from '@/lib/checkoutDraft';
 
-const PICKUP_LOCATIONS = ['Taipei', 'Hong Kong', 'Shenzhen', 'Busan', 'Singapore'];
-const DELIVERY_CITY_OPTIONS = ['Indonesia - Jabodetabek', 'Indonesia - Outside Jabodetabek', 'Others'];
-const INDONESIA_DELIVERY_FEES = {
-    'Indonesia - Jabodetabek': 10000,
-    'Indonesia - Outside Jabodetabek': 20000,
-};
-const PAYMENT_PROOF_MAX_SIZE_BYTES = 3 * 1024 * 1024;
-const PAYMENT_PROOF_MAX_SIZE_LABEL = '3 MB';
-const CHECKOUT_STORAGE_KEY = 'solchap.checkout';
-const CHECKOUT_STEPS = new Set(['disclaimers', 'payment', 'payment-proof']);
-const SHIPPING_METHODS = new Set(['delivery', 'self-pickup']);
-const CONTACT_METHODS = new Set(['whatsapp', 'line']);
-const POSTAL_CODE_PATTERN = /^\d+$/;
-const DEFAULT_DISCLAIMERS = {
-    productAccuracy: false,
-    deliveryTiming: false,
-    limitedStock: false,
-};
-
-const getStoredString = (value) => typeof value === 'string' ? value : '';
-
-const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
+const OrderSummary = ({ items, currencyCode, onOrderComplete }) => {
 
     const activeCurrency = currencyCode || DEFAULT_CURRENCY;
     const router = useRouter();
     const dispatch = useDispatch();
 
-    const [checkoutStep, setCheckoutStep] = useState('disclaimers');
-    const [shippingMethod, setShippingMethod] = useState('delivery');
-    const [contactMethod, setContactMethod] = useState('whatsapp');
-    const [customerName, setCustomerName] = useState('');
-    const [whatsappCountryCode, setWhatsappCountryCode] = useState('');
-    const [whatsappNumber, setWhatsappNumber] = useState('');
-    const [lineId, setLineId] = useState('');
-    const [email, setEmail] = useState('');
-    const [deliveryCity, setDeliveryCity] = useState('');
-    const [otherDeliveryCity, setOtherDeliveryCity] = useState('');
-    const [deliveryPostalCode, setDeliveryPostalCode] = useState('');
-    const [deliveryAddress, setDeliveryAddress] = useState('');
-    const [pickupLocation, setPickupLocation] = useState('');
-    const [paymentProof, setPaymentProof] = useState(null);
-    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-    const [confirmedEmail, setConfirmedEmail] = useState('');
-    // const [showAddressModal, setShowAddressModal] = useState(false);
-    const [couponCodeInput, setCouponCodeInput] = useState('');
-    const [coupon, setCoupon] = useState('');
-    const [disclaimers, setDisclaimers] = useState(DEFAULT_DISCLAIMERS);
-    const [showDisclaimerError, setShowDisclaimerError] = useState(false);
-    const [showPaymentInfoError, setShowPaymentInfoError] = useState(false);
-    const [showPaymentProofError, setShowPaymentProofError] = useState(false);
-    const [isCheckoutDraftHydrated, setIsCheckoutDraftHydrated] = useState(false);
-
-    const allDisclaimersAccepted = Object.values(disclaimers).every(Boolean);
-    const trimmedWhatsappCountryCode = whatsappCountryCode.trim();
-    const isWhatsappCountryCodeValid = trimmedWhatsappCountryCode.startsWith('+') && trimmedWhatsappCountryCode.length > 1;
-    const isCustomerNameMissing = customerName.trim().length === 0;
-    const isWhatsappNumberMissing = contactMethod === 'whatsapp' && whatsappNumber.trim().length === 0;
-    const isLineIdMissing = contactMethod === 'line' && lineId.trim().length === 0;
-    const shouldShowWhatsappCountryCodeError = contactMethod === 'whatsapp' && (trimmedWhatsappCountryCode.length > 0 || showPaymentInfoError) && !isWhatsappCountryCodeValid;
-    const isContactComplete = contactMethod === 'whatsapp'
-        ? isWhatsappCountryCodeValid && whatsappNumber.trim().length > 0
-        : lineId.trim().length > 0;
-    const selectedDeliveryCity = deliveryCity === 'Others'
-        ? otherDeliveryCity.trim()
-        : deliveryCity.trim();
-    const trimmedDeliveryPostalCode = deliveryPostalCode.trim();
-    const trimmedEmail = email.trim();
-    const isEmailValid = /^[^\s@]+@[^\s@]+$/.test(trimmedEmail);
-    const shouldShowEmailError = (trimmedEmail.length > 0 || showPaymentInfoError) && !isEmailValid;
-    const isDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity.trim().length === 0;
-    const isOtherDeliveryCityMissing = shippingMethod === 'delivery' && deliveryCity === 'Others' && otherDeliveryCity.trim().length === 0;
-    const isDeliveryPostalCodeMissing = shippingMethod === 'delivery' && trimmedDeliveryPostalCode.length === 0;
-    const isDeliveryPostalCodeInvalid = shippingMethod === 'delivery' && deliveryPostalCode.length > 0 && !POSTAL_CODE_PATTERN.test(deliveryPostalCode);
-    const shouldShowDeliveryPostalCodeError = (showPaymentInfoError && isDeliveryPostalCodeMissing) || isDeliveryPostalCodeInvalid;
-    const isDeliveryAddressMissing = shippingMethod === 'delivery' && deliveryAddress.trim().length === 0;
-    const isPickupLocationMissing = shippingMethod === 'self-pickup' && pickupLocation.trim().length === 0;
-    const isShippingInfoComplete = shippingMethod === 'delivery'
-        ? selectedDeliveryCity.length > 0 && trimmedDeliveryPostalCode.length > 0 && !isDeliveryPostalCodeInvalid && deliveryAddress.trim().length > 0
-        : pickupLocation.trim().length > 0;
-    const isPaymentInfoComplete = customerName.trim().length > 0 && isContactComplete && isEmailValid && isShippingInfoComplete;
-    const deliveryFee = shippingMethod === 'delivery' ? INDONESIA_DELIVERY_FEES[deliveryCity] || 0 : 0;
-    const isIndonesiaDelivery = deliveryFee > 0;
-    const orderCurrency = isIndonesiaDelivery ? DEFAULT_CURRENCY : activeCurrency;
-    const orderSubtotal = isIndonesiaDelivery
-        ? items.reduce((total, item) => total + getProductPrice(item, DEFAULT_CURRENCY) * item.quantity, 0)
-        : totalPrice;
-    const orderTotalBeforeDelivery = coupon ? Number((orderSubtotal - (coupon.discount / 100 * orderSubtotal)).toFixed(2)) : orderSubtotal;
-    const orderTotal = orderTotalBeforeDelivery + deliveryFee;
-    const formattedOrderTotal = formatPrice(orderTotal, orderCurrency);
-    const formattedDeliveryFee = formatPrice(deliveryFee, DEFAULT_CURRENCY);
-    const deliveryFeeMessage = deliveryFee > 0
-        ? `Shipment to ${deliveryCity} will incur a ${deliveryFee.toLocaleString('en-US')} IDR delivery fee.`
-        : '';
-
-    useEffect(() => {
-        try {
-            const storedDraft = window.localStorage.getItem(CHECKOUT_STORAGE_KEY);
-
-            if (!storedDraft) {
-                return;
-            }
-
-            const draft = JSON.parse(storedDraft);
-
-            if (!draft || typeof draft !== 'object') {
-                return;
-            }
-
-            if (CHECKOUT_STEPS.has(draft.checkoutStep)) {
-                setCheckoutStep(draft.checkoutStep);
-            }
-
-            if (SHIPPING_METHODS.has(draft.shippingMethod)) {
-                setShippingMethod(draft.shippingMethod);
-            }
-
-            if (CONTACT_METHODS.has(draft.contactMethod)) {
-                setContactMethod(draft.contactMethod);
-            }
-
-            setCustomerName(getStoredString(draft.customerName));
-            setWhatsappCountryCode(getStoredString(draft.whatsappCountryCode));
-            setWhatsappNumber(getStoredString(draft.whatsappNumber));
-            setLineId(getStoredString(draft.lineId));
-            setEmail(getStoredString(draft.email));
-            setDeliveryCity(getStoredString(draft.deliveryCity));
-            setOtherDeliveryCity(getStoredString(draft.otherDeliveryCity));
-            setDeliveryPostalCode(getStoredString(draft.deliveryPostalCode));
-            setDeliveryAddress(getStoredString(draft.deliveryAddress));
-            setPickupLocation(getStoredString(draft.pickupLocation));
-
-            if (draft.disclaimers && typeof draft.disclaimers === 'object') {
-                setDisclaimers({
-                    productAccuracy: Boolean(draft.disclaimers.productAccuracy),
-                    deliveryTiming: Boolean(draft.disclaimers.deliveryTiming),
-                    limitedStock: Boolean(draft.disclaimers.limitedStock),
-                });
-            }
-        } catch (error) {
-            console.error('Failed to load checkout draft from local storage:', error);
-        } finally {
-            setIsCheckoutDraftHydrated(true);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!isCheckoutDraftHydrated) {
-            return;
-        }
-
-        try {
-            if (checkoutStep === 'confirmation') {
-                window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
-                return;
-            }
-
-            window.localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify({
-                checkoutStep,
-                shippingMethod,
-                contactMethod,
-                customerName,
-                whatsappCountryCode,
-                whatsappNumber,
-                lineId,
-                email,
-                deliveryCity,
-                otherDeliveryCity,
-                deliveryPostalCode,
-                deliveryAddress,
-                pickupLocation,
-                disclaimers,
-            }));
-        } catch (error) {
-            console.error('Failed to save checkout draft to local storage:', error);
-        }
-    }, [
+    const { draft, setField, setStep, isHydrated, validation, pricing, clearDraft, buildOrderPayload } = useCheckoutDraft(items, activeCurrency);
+    const {
         checkoutStep,
         shippingMethod,
         contactMethod,
@@ -197,8 +36,44 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         deliveryAddress,
         pickupLocation,
         disclaimers,
-        isCheckoutDraftHydrated,
-    ]);
+    } = draft;
+    const {
+        allDisclaimersAccepted,
+        isWhatsappCountryCodeValid,
+        isCustomerNameMissing,
+        isWhatsappNumberMissing,
+        isLineIdMissing,
+        isEmailValid,
+        isDeliveryCityMissing,
+        isOtherDeliveryCityMissing,
+        isDeliveryPostalCodeInvalid,
+        isDeliveryAddressMissing,
+        isPickupLocationMissing,
+        isPaymentInfoComplete,
+    } = validation;
+    const {
+        isIndonesiaDelivery,
+        orderCurrency,
+        formattedOrderTotal,
+        formattedDeliveryFee,
+        deliveryFeeMessage,
+    } = pricing;
+
+    const [paymentProof, setPaymentProof] = useState(null);
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [confirmedEmail, setConfirmedEmail] = useState('');
+    // const [showAddressModal, setShowAddressModal] = useState(false);
+    const [couponCodeInput, setCouponCodeInput] = useState('');
+    const [coupon, setCoupon] = useState('');
+    const [showDisclaimerError, setShowDisclaimerError] = useState(false);
+    const [showPaymentInfoError, setShowPaymentInfoError] = useState(false);
+    const [showPaymentProofError, setShowPaymentProofError] = useState(false);
+
+    const trimmedWhatsappCountryCode = whatsappCountryCode.trim();
+    const shouldShowWhatsappCountryCodeError = contactMethod === 'whatsapp' && (trimmedWhatsappCountryCode.length > 0 || showPaymentInfoError) && !isWhatsappCountryCodeValid;
+    const trimmedEmail = email.trim();
+    const shouldShowEmailError = (trimmedEmail.length > 0 || showPaymentInfoError) && !isEmailValid;
+    const shouldShowDeliveryPostalCodeError = (showPaymentInfoError && validation.isDeliveryPostalCodeMissing) || isDeliveryPostalCodeInvalid;
 
     useEffect(() => {
         if (isPaymentInfoComplete) {
@@ -235,7 +110,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
             [key]: checked,
         };
 
-        setDisclaimers(nextDisclaimers);
+        setField('disclaimers', nextDisclaimers);
 
         if (Object.values(nextDisclaimers).every(Boolean)) {
             setShowDisclaimerError(false);
@@ -249,7 +124,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         setShowDisclaimerError(false);
-        setCheckoutStep('payment');
+        setStep('payment');
     }
 
     const handleUploadPaymentProof = () => {
@@ -259,7 +134,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         setShowPaymentInfoError(false);
-        setCheckoutStep('payment-proof');
+        setStep('payment-proof');
     }
 
     const handleFinishOrder = (e) => {
@@ -305,41 +180,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
             throw new Error(`Payment proof must be ${PAYMENT_PROOF_MAX_SIZE_LABEL} or smaller. Please upload your payment proof again.`);
         }
 
-        const contact = contactMethod === 'whatsapp'
-            ? `${whatsappCountryCode.trim()} ${whatsappNumber.trim()}`.trim()
-            : lineId.trim();
-        const shippingMethodLabel = shippingMethod === 'delivery' ? 'Delivery' : 'Self Pick-up';
-        const orderAddress = shippingMethod === 'delivery' ? deliveryAddress.trim() : '';
-        const orderPostalCode = shippingMethod === 'delivery' ? trimmedDeliveryPostalCode : '';
-
-        const orderFormData = new FormData();
-
-        orderFormData.append('order', JSON.stringify({
-            items: items.map((item) => ({
-                productId: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                price: isIndonesiaDelivery ? getProductPrice(item, DEFAULT_CURRENCY) : item.selectedPrice,
-            })),
-            subtotal: orderSubtotal,
-            deliveryFee,
-            totalPrice: orderTotal,
-            currency: orderCurrency,
-            shippingMethod: shippingMethodLabel,
-            deliveryArea: shippingMethod === 'delivery' ? deliveryCity : '',
-            deliveryCity: shippingMethod === 'delivery' ? selectedDeliveryCity : '',
-            postalCode: orderPostalCode,
-            pickupCity: shippingMethod === 'self-pickup' ? pickupLocation.trim() : '',
-            customerName: customerName.trim(),
-            contactType: contactMethod === 'whatsapp' ? 'WhatsApp' : 'Line ID',
-            contact,
-            whatsappCountryCode: contactMethod === 'whatsapp' ? whatsappCountryCode.trim() : '',
-            whatsappNumber: contactMethod === 'whatsapp' ? whatsappNumber.trim() : '',
-            lineId: contactMethod === 'line' ? lineId.trim() : '',
-            email: email.trim(),
-            address: orderAddress,
-        }));
-        orderFormData.append('paymentProof', paymentProof);
+        const orderFormData = buildOrderPayload({ paymentProof });
 
         const response = await fetch('/api/orders', {
             method: 'POST',
@@ -352,13 +193,13 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
         }
 
         setConfirmedEmail(email.trim());
-        setCheckoutStep('confirmation');
-        window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+        clearDraft();
+        setStep('confirmation');
         onOrderComplete?.();
         dispatch(clearCart());
     }
 
-    if (!isCheckoutDraftHydrated) {
+    if (!isHydrated) {
         return (
             <div className='w-full max-w-lg lg:max-w-[600px] bg-slate-50/30 border border-slate-200 text-slate-500 text-sm rounded-xl p-7'>
                 <div className='flex items-center justify-center py-20'>
@@ -416,7 +257,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                 </>
             ) : checkoutStep === 'payment' ? (
                 <>
-                    <button onClick={() => setCheckoutStep('disclaimers')} className='text-xs text-slate-400 hover:text-slate-700 mt-2'> &lt; Back to disclaimers</button>
+                    <button onClick={() => setStep('disclaimers')} className='text-xs text-slate-400 hover:text-slate-700 mt-2'> &lt; Back to disclaimers</button>
                     <p className='text-slate-400 text-xs my-4'>Shipping Method</p>
                     <div className='space-y-4 text-slate-500'>
                         <div>
@@ -425,7 +266,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     type="radio"
                                     id="delivery"
                                     name="shippingMethod"
-                                    onChange={() => setShippingMethod('delivery')}
+                                    onChange={() => setField('shippingMethod', 'delivery')}
                                     checked={shippingMethod === 'delivery'}
                                     className='accent-gray-500'
                                 />
@@ -439,7 +280,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     type="radio"
                                     id="self-pickup"
                                     name="shippingMethod"
-                                    onChange={() => setShippingMethod('self-pickup')}
+                                    onChange={() => setField('shippingMethod', 'self-pickup')}
                                     checked={shippingMethod === 'self-pickup'}
                                     className='accent-gray-500'
                                 />
@@ -454,7 +295,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                         <input
                             type="text"
                             value={customerName}
-                            onChange={(e) => setCustomerName(e.target.value)}
+                            onChange={(e) => setField('customerName', e.target.value)}
                             placeholder='Type your name'
                             aria-invalid={showPaymentInfoError && isCustomerNameMissing}
                             className={`border p-2 w-full mb-4 outline-none rounded text-slate-600 ${showPaymentInfoError && isCustomerNameMissing ? 'border-red-400' : 'border-slate-400'}`}
@@ -463,11 +304,11 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                         <p className='mb-3'>Contact</p>
                         <div className='flex gap-4 text-slate-500'>
                             <label className='flex items-center gap-2 cursor-pointer'>
-                                <input type="radio" name="contactMethod" value="whatsapp" checked={contactMethod === 'whatsapp'} onChange={() => setContactMethod('whatsapp')} className='accent-gray-500' />
+                                <input type="radio" name="contactMethod" value="whatsapp" checked={contactMethod === 'whatsapp'} onChange={() => setField('contactMethod', 'whatsapp')} className='accent-gray-500' />
                                 WhatsApp
                             </label>
                             <label className='flex items-center gap-2 cursor-pointer'>
-                                <input type="radio" name="contactMethod" value="line" checked={contactMethod === 'line'} onChange={() => setContactMethod('line')} className='accent-gray-500' />
+                                <input type="radio" name="contactMethod" value="line" checked={contactMethod === 'line'} onChange={() => setField('contactMethod', 'line')} className='accent-gray-500' />
                                 Line ID
                             </label>
                         </div>
@@ -477,7 +318,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     <input
                                         type="tel"
                                         value={whatsappCountryCode}
-                                        onChange={(e) => setWhatsappCountryCode(e.target.value)}
+                                        onChange={(e) => setField('whatsappCountryCode', e.target.value)}
                                         placeholder='+62'
                                         aria-invalid={shouldShowWhatsappCountryCodeError}
                                         className={`border p-2 w-24 outline-none rounded text-slate-600 ${shouldShowWhatsappCountryCodeError ? 'border-red-400' : 'border-slate-400'}`}
@@ -485,7 +326,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     <input
                                         type="tel"
                                         value={whatsappNumber}
-                                        onChange={(e) => setWhatsappNumber(e.target.value)}
+                                        onChange={(e) => setField('whatsappNumber', e.target.value)}
                                         placeholder='WhatsApp number'
                                         aria-invalid={showPaymentInfoError && isWhatsappNumberMissing}
                                         className={`border p-2 w-full outline-none rounded text-slate-600 ${showPaymentInfoError && isWhatsappNumberMissing ? 'border-red-400' : 'border-slate-400'}`}
@@ -500,7 +341,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                             <input
                                 type="text"
                                 value={lineId}
-                                onChange={(e) => setLineId(e.target.value)}
+                                onChange={(e) => setField('lineId', e.target.value)}
                                 placeholder='Line ID'
                                 aria-invalid={showPaymentInfoError && isLineIdMissing}
                                 className={`border p-2 w-full mt-3 outline-none rounded text-slate-600 ${showPaymentInfoError && isLineIdMissing ? 'border-red-400' : 'border-slate-400'}`}
@@ -511,7 +352,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                         <input
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setField('email', e.target.value)}
                             placeholder='Type your email'
                             aria-invalid={shouldShowEmailError}
                             className={`border p-2 w-full mt-3 outline-none rounded text-slate-600 ${shouldShowEmailError ? 'border-red-400 mb-1' : 'border-slate-400 mb-3'}`}
@@ -525,7 +366,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 <p className='mt-4'>City</p>
                                 <select
                                     value={deliveryCity}
-                                    onChange={(e) => setDeliveryCity(e.target.value)}
+                                    onChange={(e) => setField('deliveryCity', e.target.value)}
                                     aria-invalid={showPaymentInfoError && isDeliveryCityMissing}
                                     className={`border p-2 w-full my-3 outline-none rounded text-slate-600 bg-white ${showPaymentInfoError && isDeliveryCityMissing ? 'border-red-400' : 'border-slate-400'}`}
                                 >
@@ -542,7 +383,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                         <input
                                             type="text"
                                             value={otherDeliveryCity}
-                                            onChange={(e) => setOtherDeliveryCity(e.target.value)}
+                                            onChange={(e) => setField('otherDeliveryCity', e.target.value)}
                                             placeholder='Type your city'
                                             aria-invalid={showPaymentInfoError && isOtherDeliveryCityMissing}
                                             className={`border p-2 w-full mb-3 outline-none rounded text-slate-600 ${showPaymentInfoError && isOtherDeliveryCityMissing ? 'border-red-400' : 'border-slate-400'}`}
@@ -556,7 +397,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     value={deliveryPostalCode}
-                                    onChange={(e) => setDeliveryPostalCode(e.target.value)}
+                                    onChange={(e) => setField('deliveryPostalCode', e.target.value)}
                                     aria-label="Postal code"
                                     aria-invalid={shouldShowDeliveryPostalCodeError}
                                     placeholder='Postal code'
@@ -567,7 +408,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                 )}
                                 <textarea
                                     value={deliveryAddress}
-                                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                                    onChange={(e) => setField('deliveryAddress', e.target.value)}
                                     aria-label="Full address"
                                     aria-invalid={showPaymentInfoError && isDeliveryAddressMissing}
                                     rows={4}
@@ -587,7 +428,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                                                 name="pickupLocation"
                                                 value={location}
                                                 checked={pickupLocation === location}
-                                                onChange={(e) => setPickupLocation(e.target.value)}
+                                                onChange={(e) => setField('pickupLocation', e.target.value)}
                                                 aria-invalid={showPaymentInfoError && isPickupLocationMissing}
                                                 className={`accent-gray-500 ${showPaymentInfoError && isPickupLocationMissing ? 'outline outline-2 outline-red-500 outline-offset-1' : ''}`}
                                             />
@@ -670,7 +511,7 @@ const OrderSummary = ({ totalPrice, items, currencyCode, onOrderComplete }) => {
                 </div>
             ) : (
                 <>
-                    <button onClick={() => setCheckoutStep('payment')} className='text-xs text-slate-400 hover:text-slate-700 mt-2'> &lt; Back to contact</button>
+                    <button onClick={() => setStep('payment')} className='text-xs text-slate-400 hover:text-slate-700 mt-2'> &lt; Back to contact</button>
                     <div className='my-4 py-4 border-y border-slate-200'>
                         <div className='mb-5 space-y-4 text-slate-500'>
                             <p className='font-medium text-slate-600'>We accept 3 ways of payment:</p>

@@ -9,8 +9,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { formatPrice, getProductPrice } from "@/lib/currency";
-
-const CHECKOUT_STORAGE_KEY = 'solchap.checkout';
+import { clearCheckoutDraft } from "@/lib/checkoutDraft";
 
 export default function Cart() {
 
@@ -21,11 +20,9 @@ export default function Cart() {
     const dispatch = useDispatch();
 
     const [cartArray, setCartArray] = useState([]);
-    const [totalPrice, setTotalPrice] = useState(0);
     const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
 
     const createCartArray = () => {
-        setTotalPrice(0);
         const cartArray = [];
         for (const [key, value] of Object.entries(cartItems)) {
             const product = products.find(product => product.id === key);
@@ -36,7 +33,6 @@ export default function Cart() {
                     selectedPrice: itemPrice,
                     quantity: value,
                 });
-                setTotalPrice(prev => prev + itemPrice * value);
             }
         }
         setCartArray(cartArray);
@@ -57,7 +53,7 @@ export default function Cart() {
             return;
         }
 
-        window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+        clearCheckoutDraft();
     }, [cartItems, hasHydrated, isCheckoutComplete]);
 
     if (!hasHydrated) {
@@ -112,7 +108,7 @@ export default function Cart() {
                             </tbody>
                         </table>
                     </div>
-                    <OrderSummary totalPrice={totalPrice} items={cartArray} currencyCode={selectedCurrency} onOrderComplete={() => setIsCheckoutComplete(true)} />
+                    <OrderSummary items={cartArray} currencyCode={selectedCurrency} onOrderComplete={() => setIsCheckoutComplete(true)} />
                 </div>
             </div>
         </div>
