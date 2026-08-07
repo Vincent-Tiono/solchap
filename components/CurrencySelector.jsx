@@ -13,7 +13,7 @@ const CurrencySelector = ({ className = '' }) => {
             aria-label="Currency"
             value={selectedCurrency}
             onChange={(e) => dispatch(setCurrency(e.target.value))}
-            className={`rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 outline-none transition hover:border-slate-400 ${className}`}
+            className={`rounded-full border border-[#123f19]/20 bg-transparent px-3 py-2 text-sm text-[#3a352c] outline-none transition hover:border-[#123f19]/50 ${className}`}
         >
             {CURRENCY_OPTIONS.map((currency) => (
                 <option key={currency.code} value={currency.code}>

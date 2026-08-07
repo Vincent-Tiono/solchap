@@ -13,9 +13,9 @@ const ProductCard = ({ product }) => {
 
     return (
         <Link href={`/product/${product.id}`} className='group block w-full min-w-0 sm:w-60 max-xl:mx-auto'>
-            <div className='relative bg-[#F5F5F5] w-full h-40 sm:h-50 rounded-lg flex items-center justify-center overflow-hidden'>
+            <div className='relative bg-[#f1ece4] w-full h-40 sm:h-50 rounded-lg flex items-center justify-center overflow-hidden'>
                 {isOutOfStock && (
-                    <span className="absolute top-3 left-3 z-10 rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-white">
+                    <span className="absolute top-3 left-3 z-10 rounded-full bg-[#123f19] px-3 py-1 text-xs font-medium text-[#f4efe8]">
                         Out of stock
                     </span>
                 )}
@@ -28,18 +28,18 @@ const ProductCard = ({ product }) => {
                     alt=""
                 />
                 {isOutOfStock && (
-                    <div className="pointer-events-none absolute inset-0 z-[5] bg-slate-200/45" />
+                    <div className="pointer-events-none absolute inset-0 z-[5] bg-[#f1ece4]/60" />
                 )}
             </div>
-            <div className='flex justify-between gap-3 text-sm text-slate-800 pt-2 w-full sm:max-w-60 min-w-0'>
+            <div className='flex justify-between gap-3 text-sm text-[#3a352c] pt-2 w-full sm:max-w-60 min-w-0'>
                 <div className='min-w-0 flex-1'>
                     <p className='leading-snug'>{product.name}</p>
                 </div>
                 <div className='shrink-0 flex items-center gap-1.5'>
                     {isEarlyBird && (
-                        <p className='text-slate-400 line-through text-xs'>{formatPrice(originalPrice, selectedCurrency)}</p>
+                        <p className='text-[#6b6255] line-through text-xs'>{formatPrice(originalPrice, selectedCurrency)}</p>
                     )}
-                    <p className={isEarlyBird ? 'text-red-600 font-medium' : ''}>{formatPrice(price, selectedCurrency)}</p>
+                    <p className={isEarlyBird ? 'text-[#a8232f] font-medium' : ''}>{formatPrice(price, selectedCurrency)}</p>
                 </div>
             </div>
         </Link>
