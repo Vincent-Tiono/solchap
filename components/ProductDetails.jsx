@@ -8,7 +8,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Counter from "./Counter";
 import { useDispatch, useSelector } from "react-redux";
-import { formatPrice, getOriginalPrice, getProductPrice, hasEarlyBirdDiscount } from "@/lib/currency";
+import { formatPrice, getDisplayPrice } from "@/lib/currency";
 import toast from "react-hot-toast";
 
 const STOCK_CHECK_BUFFER_MS = 1200;
@@ -29,9 +29,7 @@ const ProductDetails = ({ product }) => {
     const isPreOrderOpen = new Date() <= PRE_ORDER_END_DATE;
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
     const stockLeft = product.inventorySynced === true && typeof product.stock === 'number' ? product.stock : null;
-    const price = getProductPrice(product, selectedCurrency);
-    const isEarlyBird = hasEarlyBirdDiscount(product);
-    const originalPrice = getOriginalPrice(product, selectedCurrency);
+    const { price, originalPrice, isEarlyBird } = getDisplayPrice(product, selectedCurrency);
 
     const addToCartHandler = () => {
         if (isOutOfStock) return;

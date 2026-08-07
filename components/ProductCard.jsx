@@ -3,15 +3,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { formatPrice, getOriginalPrice, getProductPrice, hasEarlyBirdDiscount } from '@/lib/currency'
+import { formatPrice, getDisplayPrice } from '@/lib/currency'
 
 const ProductCard = ({ product }) => {
 
     const selectedCurrency = useSelector(state => state.currency.selected)
     const isOutOfStock = product.inventorySynced === true && product.stock === 0;
-    const price = getProductPrice(product, selectedCurrency)
-    const isEarlyBird = hasEarlyBirdDiscount(product)
-    const originalPrice = getOriginalPrice(product, selectedCurrency)
+    const { price, originalPrice, isEarlyBird } = getDisplayPrice(product, selectedCurrency)
 
     return (
         <Link href={`/product/${product.id}`} className='group block w-full min-w-0 sm:w-60 max-xl:mx-auto'>

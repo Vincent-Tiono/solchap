@@ -8,7 +8,7 @@ import { Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { formatPrice, getProductPrice } from "@/lib/currency";
+import { formatPrice, getDisplayPrice } from "@/lib/currency";
 import { clearCheckoutDraft } from "@/lib/checkoutDraft";
 
 export default function Cart() {
@@ -27,10 +27,12 @@ export default function Cart() {
         for (const [key, value] of Object.entries(cartItems)) {
             const product = products.find(product => product.id === key);
             if (product) {
-                const itemPrice = getProductPrice(product, selectedCurrency);
+                const { price, originalPrice, isEarlyBird } = getDisplayPrice(product, selectedCurrency);
                 cartArray.push({
                     ...product,
-                    selectedPrice: itemPrice,
+                    selectedPrice: price,
+                    originalPrice,
+                    isEarlyBird,
                     quantity: value,
                 });
             }
@@ -90,13 +92,25 @@ export default function Cart() {
                                                 </div>
                                                 <div>
                                                     <p className="max-sm:text-sm">{item.name}</p>
-                                                    <p>{formatPrice(item.selectedPrice, selectedCurrency)}</p>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {item.isEarlyBird && (
+                                                            <p className="text-slate-400 line-through text-xs">{formatPrice(item.originalPrice, selectedCurrency)}</p>
+                                                        )}
+                                                        <p className={item.isEarlyBird ? 'text-red-600 font-medium' : ''}>{formatPrice(item.selectedPrice, selectedCurrency)}</p>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="text-center">
                                                 <Counter productId={item.id} maxStock={typeof item.stock === 'number' ? item.stock : null} />
                                             </td>
-                                            <td className="text-center">{formatPrice(item.selectedPrice * item.quantity, selectedCurrency)}</td>
+                                            <td className="text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    {item.isEarlyBird && (
+                                                        <p className="text-slate-400 line-through text-xs">{formatPrice(item.originalPrice * item.quantity, selectedCurrency)}</p>
+                                                    )}
+                                                    <p className={item.isEarlyBird ? 'text-red-600 font-medium' : ''}>{formatPrice(item.selectedPrice * item.quantity, selectedCurrency)}</p>
+                                                </div>
+                                            </td>
                                             <td className="text-center max-md:hidden">
                                                 <button onClick={() => handleDeleteItemFromCart(item.id)} className=" text-red-500 hover:bg-red-50 p-2.5 rounded-full active:scale-95 transition-all">
                                                     <Trash2Icon size={18} />
