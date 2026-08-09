@@ -378,6 +378,9 @@ const OrderSummary = ({ items, currencyCode, onOrderComplete }) => {
                                 {deliveryFeeMessage && (
                                     <p className='-mt-1 mb-3 text-xs leading-5 text-slate-400'>{deliveryFeeMessage}</p>
                                 )}
+                                {deliveryCity === 'Indonesia - Outside Jabodetabek' && (
+                                    <p className='-mt-1 mb-3 text-xs leading-5 text-slate-400'>We may contact you for additional payment if the delivery fee exceeds IDR 50,000</p>
+                                )}
                                 {deliveryCity === 'Others' && (
                                     <>
                                         <input

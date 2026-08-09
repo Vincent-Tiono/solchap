@@ -18,4 +18,5 @@ _Avoid_: contact type, channel
 
 **Shipping Method**:
 Whether the order is Delivery or Self Pick-up. Governs which shipping fields (delivery city/postal code/address, or pickup location) are required.
+Delivery fee is city-dependent (`INDONESIA_DELIVERY_FEES`); for deliveries outside Jabodetabek the quoted fee is an estimate only — actual cost may exceed it, in which case the customer is contacted for additional payment.
 _Avoid_: shipping type, fulfillment method
