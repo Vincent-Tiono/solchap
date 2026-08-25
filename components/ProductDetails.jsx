@@ -12,7 +12,7 @@ import { formatPrice, getDisplayPrice } from "@/lib/currency";
 import toast from "react-hot-toast";
 
 const STOCK_CHECK_BUFFER_MS = 1200;
-const PRE_ORDER_END_DATE = new Date('2026-08-23T23:59:59.999Z');
+const PRE_ORDER_END_DATE = new Date('2026-08-31T23:59:59.999Z');
 
 const ProductDetails = ({ product }) => {
 
